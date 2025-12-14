@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCM Stock Control System | Dashboard</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+    <!-- System Header -->
+    <header>
+        <div class="system-identity">
+            <h1>📦 SCM Stock Control System</h1>
+            <p class="system-tagline">Visibility. Control. Efficiency.</p>
+        </div>
+        <div class="user-info">
+            <span id="current-date"></span>
+            <span id="system-status">🟢 Operational</span>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-navigation">
+        <ul>
+            <li><a href="index.html" class="nav-link active">📊 Dashboard</a></li>
+            <li><a href="add - stock.html" class="nav-link">📥 Add Stock</a></li>
+            <li><a href="inventory.html" class="nav-link">📋 Inventory Tables</a></li>
+            <li><a href="issue - stock.html" class="nav-link">📤 Issue Stock</a></li>
+            <li><a href="history.html" class="nav-link">📜 Stock History</a></li>
+            <li><a href="reports.html" class="nav-link">📈 Reports</a></li>
+        </ul>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard-container">
+        <!-- System Summary -->
+        <section class="system-summary">
+            <h2>Stock Control Overview</h2>
+            <p class="summary-description">
+                Total visibility of internal-use and resale stock. Real-time tracking, controlled issuance, and full accountability.
+            </p>
+        </section>
+
+        <!-- Key Metrics -->
+        <section class="metrics-grid">
+            <!-- Internal Use Stock -->
+            <div class="metric-card internal-card">
+                <div class="metric-header">
+                    <h3>Internal-Use Stock</h3>
+                    <span class="metric-icon">🏢</span>
+                </div>
+                <div class="metric-value" id="internal-total-items">0</div>
+                <p class="metric-label">Total Items</p>
+                <div class="metric-subvalue" id="internal-total-value">P 0.00</div>
+                <p class="metric-sublabel">Total Value</p>
+                <div class="metric-warning" id="internal-low-stock">
+                    <span>⚠️</span> <span id="internal-low-count">0</span> items low
+                </div>
+            </div>
+
+            <!-- External/Resale Stock -->
+            <div class="metric-card external-card">
+                <div class="metric-header">
+                    <h3>External-Use Stock</h3>
+                    <span class="metric-icon">💰</span>
+                </div>
+                <div class="metric-value" id="external-total-items">0</div>
+                <p class="metric-label">Total Items (Resale)</p>
+                <div class="metric-subvalue" id="external-total-value">P 0.00</div>
+                <p class="metric-sublabel">Total Value</p>
+                <div class="metric-warning" id="external-low-stock">
+                    <span>⚠️</span> <span id="external-low-count">0</span> items low
+                </div>
+            </div>
+
+            <!-- Stock Movement -->
+            <div class="metric-card movement-card">
+                <div class="metric-header">
+                    <h3>Recent Issues</h3>
+                    <span class="metric-icon">📤</span>
+                </div>
+                <div class="metric-value" id="recent-issues-count">0</div>
+                <p class="metric-label">Last 7 Days</p>
+                <div class="movement-list" id="recent-issues-list">
+                    <p>No recent issues</p>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="metric-card status-card">
+                <div class="metric-header">
+                    <h3>System Status</h3>
+                    <span class="metric-icon">⚙️</span>
+                </div>
+                <div class="status-indicators">
+                    <div class="status-item">
+                        <span class="status-dot active"></span>
+                        <span>Data Integrity</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-dot active"></span>
+                        <span>Storage Active</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-dot"></span>
+                        <span>Export Ready</span>
+                    </div>
+                </div>
+                <div class="system-actions">
+                    <button onclick="loadAllData()">🔄 Refresh Data</button>
+                    <button onclick="clearDemoData()">🧹 Clear Test Data</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="add - stock.html" class="action-button">
+                    <span>➕</span> Add New Stock
+                </a>
+                <a href="issue - stock.html" class="action-button">
+                    <span>📤</span> Issue Stock
+                </a>
+                <a href="inventory.html" class="action-button">
+                    <span>📋</span> View Full Inventory
+                </a>
+                <a href="reports.html" class="action-button">
+                    <span>📈</span> Generate Report
+                </a>
+            </div>
+        </section>
+
+        <!-- Recent Activity Table -->
+        <section class="recent-activity">
+            <h3>Recent Stock Activity</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Item</th>
+                            <th>Type</th>
+                            <th>Action</th>
+                            <th>Quantity</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activity-table-body">
+                        <!-- Will be populated by JavaScript -->
+                        <tr>
+                            <td colspan="6" class="no-data">No activity recorded</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- System Footer -->
+    <footer class="system-footer">
+        <div class="footer-content">
+            <p><strong>SCM Stock Control System</strong> | Built on Supply Chain Discipline</p>
+            <p class="footer-principle">
+                Principle: "If it is not recorded, it does not exist."
+            </p>
+            <p class="footer-version">Version 1.0 | LocalStorage Engine</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Update current date
+        function updateDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('current-date').textContent = 
+                now.toLocaleDateString('en-US', options);
+        }
+
+        // Load dashboard data from localStorage
+        function loadDashboardData() {
+            // Load internal stock
+            const internalStock = JSON.parse(localStorage.getItem('internalStock')) || [];
+            const externalStock = JSON.parse(localStorage.getItem('externalStock')) || [];
+            const issueHistory = JSON.parse(localStorage.getItem('issueHistory')) || [];
+
+            // Calculate internal metrics
+            const internalItems = internalStock.length;
+            const internalValue = internalStock.reduce((sum, item) => 
+                sum + (item.quantity * item.unitCost), 0);
+            const internalLow = internalStock.filter(item => item.quantity < 10).length;
+
+            // Calculate external metrics
+            const externalItems = externalStock.length;
+            const externalValue = externalStock.reduce((sum, item) => 
+                sum + (item.quantity * item.unitCost), 0);
+            const externalLow = externalStock.filter(item => item.quantity < 10).length;
+
+            // Update DOM
+            document.getElementById('internal-total-items').textContent = internalItems;
+            document.getElementById('internal-total-value').textContent = `P ${internalValue.toFixed(2)}`;
+            document.getElementById('internal-low-count').textContent = internalLow;
+            
+            document.getElementById('external-total-items').textContent = externalItems;
+            document.getElementById('external-total-value').textContent = `P ${externalValue.toFixed(2)}`;
+            document.getElementById('external-low-count').textContent = externalLow;
+
+            // Recent issues
+            const recentIssues = issueHistory.slice(-5).reverse();
+            document.getElementById('recent-issues-count').textContent = 
+                issueHistory.filter(issue => {
+                    const issueDate = new Date(issue.date);
+                    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                    return issueDate > weekAgo;
+                }).length;
+
+            // Update activity table
+            const activityBody = document.getElementById('activity-table-body');
+            if (recentIssues.length > 0) {
+                activityBody.innerHTML = '';
+                recentIssues.forEach(issue => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(issue.date).toLocaleDateString()}</td>
+                        <td>${issue.itemName}</td>
+                        <td>${issue.stockType}</td>
+                        <td><span class="tag issued">Issued</span></td>
+                        <td>-${issue.quantityIssued}</td>
+                        <td>${issue.remainingBalance}</td>
+                    `;
+                    activityBody.appendChild(row);
+                });
+            }
+
+            // Update low stock warnings
+            document.getElementById('internal-low-stock').style.display = 
+                internalLow > 0 ? 'flex' : 'none';
+            document.getElementById('external-low-stock').style.display = 
+                externalLow > 0 ? 'flex' : 'none';
+        }
+
+        // Load all data
+        function loadAllData() {
+            loadDashboardData();
+            alert('Dashboard data refreshed from storage.');
+        }
+
+        // Clear demo data
+        function clearDemoData() {
+            if (confirm('Clear all test data? This cannot be undone.')) {
+                localStorage.clear();
+                loadDashboardData();
+                alert('All data cleared. System reset.');
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDate();
+            loadDashboardData();
+            
+            // Set navigation active state
+            const currentPage = window.location.pathname.split('/').pop();
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(currentPage)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | SCM Stock Control</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/app.js" defer></script>
+    <!-- Chart.js for advanced visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- System Header -->
+    <header>
+        <div class="system-identity">
+            <h1>📦 SCM Stock Control System</h1>
+            <p class="system-tagline">Visibility. Control. Efficiency.</p>
+        </div>
+        <div class="user-info">
+            <span id="current-date"></span>
+            <span id="system-status">📊 Reporting Mode</span>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-navigation">
+        <ul>
+            <li><a href="index.html" class="nav-link">📊 Dashboard</a></li>
+            <li><a href="add - stock.html" class="nav-link">📥 Add Stock</a></li>
+            <li><a href="inventory.html" class="nav-link">📋 Inventory Tables</a></li>
+            <li><a href="issue - stock.html" class="nav-link">📤 Issue Stock</a></li>
+            <li><a href="history.html" class="nav-link">📜 Stock History</a></li>
+            <li><a href="reports.html" class="nav-link active">📈 Reports</a></li>
+        </ul>
+    </nav>
+
+    <!-- Reports Content -->
+    <main class="reports-container">
+        <!-- Executive Summary -->
+        <section class="executive-summary">
+            <div class="summary-header">
+                <h2>📈 SCM Intelligence Report</h2>
+                <p class="summary-subtitle">Data-driven insights for supply chain optimization</p>
+                <div class="report-period">
+                    <span>Report Period: </span>
+                    <select id="report-period" onchange="generateAllReports()">
+                        <option value="all">All Time</option>
+                        <option value="month">This Month</option>
+                        <option value="quarter">This Quarter</option>
+                        <option value="year">This Year</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <div id="custom-range" style="display: none;">
+                        <input type="date" id="custom-start">
+                        <input type="date" id="custom-end">
+                        <button onclick="applyCustomRange()">Apply</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Performance Indicators -->
+            <div class="kpi-dashboard">
+                <div class="kpi-card primary">
+                    <div class="kpi-icon">📦</div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Total Stock Value</span>
+                        <span class="kpi-value" id="kpi-total-value">P 0.00</span>
+                        <span class="kpi-change" id="kpi-value-change">+0%</span>
+                    </div>
+                </div>
+                
+                <div class="kpi-card success">
+                    <div class="kpi-icon">📤</div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Stock Turnover Ratio</span>
+                        <span class="kpi-value" id="kpi-turnover">0.00</span>
+                        <span class="kpi-subtext">Higher is better</span>
+                    </div>
+                </div>
+                
+                <div class="kpi-card warning">
+                    <div class="kpi-icon">⚠️</div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Low Stock Items</span>
+                        <span class="kpi-value" id="kpi-low-stock">0</span>
+                        <span class="kpi-subtext">Requires attention</span>
+                    </div>
+                </div>
+                
+                <div class="kpi-card info">
+                    <div class="kpi-icon">💰</div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Cost Efficiency</span>
+                        <span class="kpi-value" id="kpi-efficiency">0%</span>
+                        <span class="kpi-change" id="kpi-efficiency-change">+0%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Two-Column Report Layout -->
+        <div class="report-layout">
+            <!-- Left Column: Internal Stock Reports -->
+            <div class="report-column">
+                <!-- Internal Stock Analysis -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3>🏢 Internal-Use Stock Analysis</h3>
+                        <button class="export-btn" onclick="exportInternalReport()">📥 Export</button>
+                    </div>
+                    
+                    <div class="report-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Total Items</span>
+                            <span class="metric-value" id="internal-items">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Total Value</span>
+                            <span class="metric-value" id="internal-value">P 0.00</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Avg Unit Cost</span>
+                            <span class="metric-value" id="internal-avg-cost">P 0.00</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Issued This Month</span>
+                            <span class="metric-value" id="internal-issued-month">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="internal-category-chart"></canvas>
+                    </div>
+                    
+                    <div class="insights">
+                        <h4>🔍 Key Insights</h4>
+                        <ul id="internal-insights">
+                            <li>No data available for analysis</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Stock Movement Trends -->
+                <div class="report-card">
+                    <h3>📊 Monthly Movement Trend</h3>
+                    <div class="chart-container">
+                        <canvas id="movement-trend-chart"></canvas>
+                    </div>
+                    <div class="trend-analysis">
+                        <div class="trend-item">
+                            <span class="trend-label">Peak Issuance Month:</span>
+                            <span class="trend-value" id="peak-month">-</span>
+                        </div>
+                        <div class="trend-item">
+                            <span class="trend-label">Average Monthly Issuance:</span>
+                            <span class="trend-value" id="avg-monthly">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: External Stock Reports -->
+            <div class="report-column">
+                <!-- External Stock Analysis -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3>💰 External-Use Stock Analysis</h3>
+                        <button class="export-btn" onclick="exportExternalReport()">📥 Export</button>
+                    </div>
+                    
+                    <div class="report-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Total Items</span>
+                            <span class="metric-value" id="external-items">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Total Value</span>
+                            <span class="metric-value" id="external-value">P 0.00</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Potential Revenue</span>
+                            <span class="metric-value" id="potential-revenue">P 0.00</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Sold This Month</span>
+                            <span class="metric-value" id="external-sold-month">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="external-category-chart"></canvas>
+                    </div>
+                    
+                    <div class="insights">
+                        <h4>🎯 Sales Opportunities</h4>
+                        <ul id="external-insights">
+                            <li>No data available for analysis</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Cost Analysis -->
+                <div class="report-card">
+                    <h3>💵 Cost Distribution Analysis</h3>
+                    <div class="chart-container">
+                        <canvas id="cost-distribution-chart"></canvas>
+                    </div>
+                    <div class="cost-analysis">
+                        <div class="cost-item">
+                            <span class="cost-label">Highest Cost Category:</span>
+                            <span class="cost-value" id="highest-cost-category">-</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-label">Most Efficient Category:</span>
+                            <span class="cost-value" id="efficient-category">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Width: Detailed Analysis -->
+        <section class="detailed-analysis">
+            <div class="analysis-header">
+                <h3>📋 Detailed Stock Analysis</h3>
+                <div class="analysis-controls">
+                    <select id="analysis-view" onchange="updateDetailedAnalysis()">
+                        <option value="low-stock">Low Stock Items</option>
+                        <option value="high-value">High Value Items</option>
+                        <option value="fast-moving">Fast Moving Items</option>
+                        <option value="slow-moving">Slow Moving Items</option>
+                    </select>
+                    <button onclick="exportDetailedAnalysis()">📥 Export Data</button>
+                </div>
+            </div>
+            
+            <div class="analysis-table-container">
+                <table class="analysis-table" id="detailed-analysis-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Stock Type</th>
+                            <th>Category</th>
+                            <th>Current Quantity</th>
+                            <th>Unit Cost</th>
+                            <th>Total Value</th>
+                            <th>Issued Last Month</th>
+                            <th>Turnover Rate</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-table-body">
+                        <tr>
+                            <td colspan="9" class="no-data">Loading analysis data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Recommendations Section -->
+        <section class="recommendations">
+            <h3>🎯 SCM Recommendations & Action Items</h3>
+            
+            <div class="recommendation-cards">
+                <div class="rec-card urgent">
+                    <div class="rec-icon">🚨</div>
+                    <div class="rec-content">
+                        <h4>Immediate Actions</h4>
+                        <ul id="urgent-actions">
+                            <li>No urgent actions required</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="rec-card strategic">
+                    <div class="rec-icon">🎯</div>
+                    <div class="rec-content">
+                        <h4>Strategic Recommendations</h4>
+                        <ul id="strategic-recommendations">
+                            <li>Add more data for better insights</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="rec-card efficiency">
+                    <div class="rec-icon">⚡</div>
+                    <div class="rec-content">
+                        <h4>Efficiency Improvements</h4>
+                        <ul id="efficiency-improvements">
+                            <li>Implement regular stock audits</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Report Generation Tools -->
+        <section class="report-tools">
+            <h3>🛠️ Report Generation Tools</h3>
+            
+            <div class="tool-buttons">
+                <button class="tool-btn" onclick="generateFullReport()">
+                    📄 Generate Full Report
+                </button>
+                <button class="tool-btn" onclick="exportAllCharts()">
+                    📊 Export All Charts
+                </button>
+                <button class="tool-btn" onclick="printReport()">
+                    🖨️ Print This Report
+                </button>
+                <button class="tool-btn" onclick="generateExecutiveSummary()">
+                    👔 Executive Summary
+                </button>
+            </div>
+            
+            <div class="report-settings">
+                <label>
+                    <input type="checkbox" id="include-charts" checked> Include Charts in Export
+                </label>
+                <label>
+                    <input type="checkbox" id="include-recommendations" checked> Include Recommendations
+                </label>
+                <label>
+                    <input type="checkbox" id="include-raw-data"> Include Raw Data
+                </label>
+            </div>
+        </section>
+    </main>
+
+    <!-- System Footer -->
+    <footer class="system-footer">
+        <div class="footer-content">
+            <p><strong>SCM Stock Control System</strong> | Built on Supply Chain Discipline</p>
+            <p class="footer-principle">
+                Principle: "Data without analysis is just numbers. Analysis without action is just theory."
+            </p>
+            <p class="footer-version">Intelligence Module | Version 1.0 | Report Generated: <span id="report-timestamp"></span></p>
+        </div>
+    </footer>
+
+    <!-- Executive Summary Modal -->
+    <div id="executive-modal" class="modal">
+        <div class="modal-content executive-modal">
+            <div class="modal-header">
+                <h2>👔 Executive Summary</h2>
+                <span class="close-modal" onclick="closeExecutiveModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="executive-content" id="executive-content">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeExecutiveModal()">
+                        Close
+                    </button>
+                    <button class="btn-primary" onclick="printExecutiveSummary()">
+                        🖨️ Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Reports Page -->
+    <script>
+        // Charts
+        let internalCategoryChart = null;
+        let externalCategoryChart = null;
+        let movementTrendChart = null;
+        let costDistributionChart = null;
+        
+        // Data
+        let allStockData = [];
+        let allHistoryData = [];
+        let filteredData = [];
+        let reportPeriod = 'all';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date
+            const today = new Date();
+            document.getElementById('current-date').textContent = 
+                today.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            
+            // Set report timestamp
+            document.getElementById('report-timestamp').textContent = 
+                today.toLocaleString();
+            
+            // Load data and generate reports
+            loadReportData();
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Handle period selection
+            document.getElementById('report-period').addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    document.getElementById('custom-range').style.display = 'inline-block';
+                } else {
+                    document.getElementById('custom-range').style.display = 'none';
+                    generateAllReports();
+                }
+            });
+        });
+
+        // Load data from localStorage
+        function loadReportData() {
+            // Load stock data
+            const internalStock = JSON.parse(localStorage.getItem('internalStock')) || [];
+            const externalStock = JSON.parse(localStorage.getItem('externalStock')) || [];
+            
+            allStockData = [...internalStock.map(item => ({...item, stockType: 'Internal-Use'})),
+                          ...externalStock.map(item => ({...item, stockType: 'External-Use'}))];
+            
+            // Load history data
+            allHistoryData = JSON.parse(localStorage.getItem('issueHistory')) || [];
+            
+            // Generate initial reports
+            generateAllReports();
+        }
+
+        // Apply custom date range
+        function applyCustomRange() {
+            const startDate = document.getElementById('custom-start').value;
+            const endDate = document.getElementById('custom-end').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('Start date cannot be after end date');
+                return;
+            }
+            
+            generateAllReports();
+        }
+
+        // Generate all reports
+        function generateAllReports() {
+            // Update period
+            reportPeriod = document.getElementById('report-period').value;
+            
+            // Filter data based on period
+            filterDataByPeriod();
+            
+            // Update all report sections
+            updateKPIs();
+            updateInternalReport();
+            updateExternalReport();
+            updateMovementTrends();
+            updateCostAnalysis();
+            updateDetailedAnalysis();
+            generateRecommendations();
+            
+            // Update charts
+            updateCharts();
+        }
+
+        // Filter data by selected period
+        function filterDataByPeriod() {
+            const today = new Date();
+            let startDate, endDate = today;
+            
+            switch(reportPeriod) {
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    break;
+                case 'quarter':
+                    const currentQuarter = Math.floor(today.getMonth() / 3);
+                    startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
+                    break;
+                case 'year':
+                    startDate = new Date(today.getFullYear(), 0, 1);
+                    break;
+                case 'custom':
+                    startDate = new Date(document.getElementById('custom-start').value);
+                    endDate = new Date(document.getElementById('custom-end').value);
+                    break;
+                default: // 'all'
+                    startDate = new Date(0); // Beginning of time
+                    break;
+            }
+            
+            // Filter history data
+            filteredData = allHistoryData.filter(record => {
+                const recordDate = new Date(record.date);
+                return recordDate >= startDate && recordDate <= endDate;
+            });
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Internal Category Chart
+            const internalCtx = document.getElementById('internal-category-chart').getContext('2d');
+            internalCategoryChart = new Chart(internalCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)',
+                            'rgba(255, 159, 64, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Internal Stock by Category'
+                        }
+                    }
+                }
+            });
+
+            // External Category Chart
+            const externalCtx = document.getElementById('external-category-chart').getContext('2d');
+            externalCategoryChart = new Chart(externalCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(255, 159, 64, 0.8)',
+                            'rgba(255, 205, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(54, 162, 235, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'External Stock by Category'
+                        }
+                    }
+                }
+            });
+
+            // Movement Trend Chart
+            const trendCtx = document.getElementById('movement-trend-chart').getContext('2d');
+            movementTrendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Internal Issues',
+                            data: [],
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'External Issues',
+                            data: [],
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Stock Movement Trend'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantity Issued'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Cost Distribution Chart
+            const costCtx = document.getElementById('cost-distribution-chart').getContext('2d');
+            costDistributionChart = new Chart(costCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Stock Value by Category',
+                        data: [],
+                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Cost Distribution Across Categories'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Total Value (P)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update all charts
+        function updateCharts() {
+            updateInternalCategoryChart();
+            updateExternalCategoryChart();
+            updateMovementTrendChart();
+            updateCostDistributionChart();
+        }
+
+        // Update KPI Dashboard
+        function updateKPIs() {
+            // Calculate total stock value
+            const totalValue = allStockData.reduce((sum, item) => 
+                sum + (item.quantity * item.unitCost), 0);
+            document.getElementById('kpi-total-value').textContent = `P ${totalValue.toFixed(2)}`;
+            
+            // Calculate stock turnover ratio
+            const totalIssuedValue = filteredData.reduce((sum, record) => sum + record.totalValue, 0);
+            const avgInventoryValue = totalValue / 2; // Simplified calculation
+            const turnoverRatio = avgInventoryValue > 0 ? (totalIssuedValue / avgInventoryValue).toFixed(2) : '0.00';
+            document.getElementById('kpi-turnover').textContent = turnoverRatio;
+            
+            // Count low stock items
+            const lowStockCount = allStockData.filter(item => item.quantity < 10).length;
+            document.getElementById('kpi-low-stock').textContent = lowStockCount;
+            
+            // Calculate cost efficiency
+            const internalStock = allStockData.filter(item => item.stockType === 'Internal-Use');
+            const internalValue = internalStock.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0);
+            const efficiency = totalValue > 0 ? Math.round((internalValue / totalValue) * 100) : 0;
+            document.getElementById('kpi-efficiency').textContent = `${efficiency}%`;
+        }
+
+        // Update Internal Stock Report
+        function updateInternalReport() {
+            const internalStock = allStockData.filter(item => item.stockType === 'Internal-Use');
+            const internalIssues = filteredData.filter(record => record.stockType === 'Internal-Use');
+            
+            // Update metrics
+            document.getElementById('internal-items').textContent = internalStock.length;
+            
+            const internalValue = internalStock.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0);
+            document.getElementById('internal-value').textContent = `P ${internalValue.toFixed(2)}`;
+            
+            const avgCost = internalStock.length > 0 ? 
+                internalStock.reduce((sum, item) => sum + item.unitCost, 0) / internalStock.length : 0;
+            document.getElementById('internal-avg-cost').textContent = `P ${avgCost.toFixed(2)}`;
+            
+            document.getElementById('internal-issued-month').textContent = internalIssues.length;
+            
+            // Generate insights
+            const insights = [];
+            if (internalStock.length === 0) {
+                insights.push('No internal stock data available');
+            } else {
+                if (internalValue > 10000) {
+                    insights.push('High-value internal stock detected - consider optimization');
+                }
+                
+                const lowStock = internalStock.filter(item => item.quantity < 10);
+                if (lowStock.length > 0) {
+                    insights.push(`${lowStock.length} items are below minimum stock level`);
+                }
+                
+                if (internalIssues.length === 0) {
+                    insights.push('No internal stock issued in selected period');
+                }
+            }
+            
+            updateInsightsList('internal-insights', insights);
+        }
+
+        // Update External Stock Report
+        function updateExternalReport() {
+            const externalStock = allStockData.filter(item => item.stockType === 'External-Use');
+            const externalIssues = filteredData.filter(record => record.stockType === 'External-Use');
+            
+            // Update metrics
+            document.getElementById('external-items').textContent = externalStock.length;
+            
+            const externalValue = externalStock.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0);
+            document.getElementById('external-value').textContent = `P ${externalValue.toFixed(2)}`;
+            
+            // Calculate potential revenue (assuming 30% markup)
+            const potentialRevenue = externalStock.reduce((sum, item) => 
+                sum + (item.quantity * item.unitCost * 1.3), 0);
+            document.getElementById('potential-revenue').textContent = `P ${potentialRevenue.toFixed(2)}`;
+            
+            document.getElementById('external-sold-month').textContent = externalIssues.length;
+            
+            // Generate insights
+            const insights = [];
+            if (externalStock.length === 0) {
+                insights.push('No external stock data available');
+            } else {
+                if (externalValue > 5000) {
+                    insights.push('Significant capital tied in resale stock');
+                }
+                
+                if (externalIssues.length > 0) {
+                    const avgSaleValue = externalIssues.reduce((sum, record) => sum + record.totalValue, 0) / externalIssues.length;
+                    insights.push(`Average sale value: P ${avgSaleValue.toFixed(2)}`);
+                }
+                
+                const fastMoving = externalStock.filter(item => {
+                    const itemIssues = externalIssues.filter(issue => issue.itemName === item.itemName);
+                    return itemIssues.length >= 3;
+                });
+                if (fastMoving.length > 0) {
+                    insights.push(`${fastMoving.length} items are fast-moving - consider stocking more`);
+                }
+            }
+            
+            updateInsightsList('external-insights', insights);
+        }
+
+        // Update movement trends
+        function updateMovementTrends() {
+            // Get last 6 months of data
+            const months = [];
+            const internalTrend = [];
+            const externalTrend = [];
+            
+            const today = new Date();
+            for (let i = 5; i >= 0; i--) {
+                const month = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const monthStr = month.toLocaleDateString('en-US', { month: 'short' });
+                months.push(monthStr);
+                
+                // Count issues for this month
+                const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
+                const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+                
+                const monthIssues = allHistoryData.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return recordDate >= monthStart && recordDate <= monthEnd;
+                });
+                
+                internalTrend.push(monthIssues.filter(record => record.stockType === 'Internal-Use').length);
+                externalTrend.push(monthIssues.filter(record => record.stockType === 'External-Use').length);
+            }
+            
+            // Update trend analysis
+            const maxInternal = Math.max(...internalTrend);
+            const maxExternal = Math.max(...externalTrend);
+            const peakMonthIndex = internalTrend.indexOf(maxInternal) > externalTrend.indexOf(maxExternal) ? 
+                                 internalTrend.indexOf(maxInternal) : externalTrend.indexOf(maxExternal);
+            
+            document.getElementById('peak-month').textContent = months[peakMonthIndex] || '-';
+            document.getElementById('avg-monthly').textContent = 
+                Math.round((internalTrend.reduce((a, b) => a + b, 0) + externalTrend.reduce((a, b) => a + b, 0)) / 6);
+        }
+
+        // Update cost analysis
+        function updateCostAnalysis() {
+            // Group by category and calculate total value
+            const categoryMap = {};
+            allStockData.forEach(item => {
+                if (!categoryMap[item.category]) {
+                    categoryMap[item.category] = 0;
+                }
+                categoryMap[item.category] += item.quantity * item.unitCost;
+            });
+            
+            // Find highest cost category
+            let highestCost = 0;
+            let highestCategory = '-';
+            
+            for (const [category, value] of Object.entries(categoryMap)) {
+                if (value > highestCost) {
+                    highestCost = value;
+                    highestCategory = category;
+                }
+            }
+            
+            document.getElementById('highest-cost-category').textContent = 
+                `${highestCategory} (P ${highestCost.toFixed(2)})`;
+            
+            // Most efficient category (highest turnover)
+            // This would require more complex calculation
+            document.getElementById('efficient-category').textContent = 'Analysis needed';
+        }
+
+        // Update detailed analysis table
+        function updateDetailedAnalysis() {
+            const viewType = document.getElementById('analysis-view').value;
+            const tbody = document.getElementById('analysis-table-body');
+            
+            let filteredItems = [];
+            
+            switch(viewType) {
+                case 'low-stock':
+                    filteredItems = allStockData.filter(item => item.quantity < 10);
+                    break;
+                case 'high-value':
+                    filteredItems = allStockData.filter(item => (item.quantity * item.unitCost) > 1000);
+                    break;
+                case 'fast-moving':
+                    // Items issued at least 3 times in the last month
+                    filteredItems = allStockData.filter(item => {
+                        const itemIssues = filteredData.filter(record => record.itemName === item.itemName);
+                        return itemIssues.length >= 3;
+                    });
+                    break;
+                case 'slow-moving':
+                    // Items not issued in the last 3 months
+                    const threeMonthsAgo = new Date();
+                    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                    
+                    filteredItems = allStockData.filter(item => {
+                        const itemIssues = allHistoryData.filter(record => 
+                            record.itemName === item.itemName && 
+                            new Date(record.date) >= threeMonthsAgo
+                        );
+                        return itemIssues.length === 0;
+                    });
+                    break;
+            }
+            
+            if (filteredItems.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="no-data">
+                            No items match the selected criteria
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Render table
+            tbody.innerHTML = '';
+            filteredItems.forEach(item => {
+                const totalValue = item.quantity * item.unitCost;
+                const itemIssues = filteredData.filter(record => record.itemName === item.itemName);
+                const issuedCount = itemIssues.reduce((sum, record) => sum + record.quantityIssued, 0);
+                const turnoverRate = item.quantity > 0 ? (issuedCount / item.quantity).toFixed(2) : '0.00';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.itemName}</td>
+                    <td>
+                        <span class="type-tag ${item.stockType === 'Internal-Use' ? 'internal-tag' : 'external-tag'}">
+                            ${item.stockType}
+                        </span>
+                    </td>
+                    <td>${item.category}</td>
+                    <td class="${item.quantity < 10 ? 'warning-cell' : ''}">${item.quantity}</td>
+                    <td>P ${item.unitCost.toFixed(2)}</td>
+                    <td>P ${totalValue.toFixed(2)}</td>
+                    <td>${issuedCount}</td>
+                    <td>${turnoverRate}</td>
+                    <td>
+                        <span class="status-tag ${getStatusTag(item, issuedCount)}">
+                            ${getStatusText(item, issuedCount)}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Generate recommendations
+        function generateRecommendations() {
+            const urgentActions = [];
+            const strategicRecs = [];
+            const efficiencyImps = [];
+            
+            // Urgent actions
+            const lowStockItems = allStockData.filter(item => item.quantity < 5);
+            if (lowStockItems.length > 0) {
+                urgentActions.push(`Reorder ${lowStockItems.length} critically low stock items`);
+            }
+            
+            if (urgentActions.length === 0) {
+                urgentActions.push('No urgent actions required at this time');
+            }
+            
+            // Strategic recommendations
+            const highValueItems = allStockData.filter(item => (item.quantity * item.unitCost) > 5000);
+            if (highValueItems.length > 0) {
+                strategicRecs.push(`Consider insurance for ${highValueItems.length} high-value items`);
+            }
+            
+            const slowMoving = allStockData.filter(item => {
+                const itemIssues = filteredData.filter(record => record.itemName === item.itemName);
+                return itemIssues.length === 0 && item.quantity > 20;
+            });
+            if (slowMoving.length > 0) {
+                strategicRecs.push(`Review ${slowMoving.length} slow-moving items for potential discontinuation`);
+            }
+            
+            if (strategicRecs.length === 0) {
+                strategicRecs.push('Continue current inventory management strategy');
+            }
+            
+            // Efficiency improvements
+            const categories = [...new Set(allStockData.map(item => item.category))];
+            if (categories.length > 8) {
+                efficiencyImps.push('Consider consolidating similar categories for better management');
+            }
+            
+            const avgLeadTime = '3 days'; // This would come from supplier data
+            efficiencyImps.push(`Current average lead time: ${avgLeadTime} - work with suppliers to reduce`);
+            
+            efficiencyImps.push('Implement monthly stock review meetings');
+            
+            // Update DOM
+            updateRecommendationsList('urgent-actions', urgentActions);
+            updateRecommendationsList('strategic-recommendations', strategicRecs);
+            updateRecommendationsList('efficiency-improvements', efficiencyImps);
+        }
+
+        // Helper functions
+        function updateInsightsList(elementId, insights) {
+            const list = document.getElementById(elementId);
+            list.innerHTML = '';
+            insights.forEach(insight => {
+                const li = document.createElement('li');
+                li.textContent = insight;
+                list.appendChild(li);
+            });
+        }
+
+        function updateRecommendationsList(elementId, recommendations) {
+            const list = document.getElementById(elementId);
+            list.innerHTML = '';
+            recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.textContent = rec;
+                list.appendChild(li);
+            });
+        }
+
+        function getStatusTag(item, issuedCount) {
+            if (item.quantity < 5) return 'status-critical';
+            if (issuedCount === 0 && item.quantity > 20) return 'status-slow';
+            if (issuedCount > 10) return 'status-fast';
+            return 'status-normal';
+        }
+
+        function getStatusText(item, issuedCount) {
+            if (item.quantity < 5) return 'Critical';
+            if (issuedCount === 0 && item.quantity > 20) return 'Slow Moving';
+            if (issuedCount > 10) return 'Fast Moving';
+            return 'Normal';
+        }
+
+        // Update charts with data
+        function updateInternalCategoryChart() {
+            const internalStock = allStockData.filter(item => item.stockType === 'Internal-Use');
+            const categoryMap = {};
+            
+            internalStock.forEach(item => {
+                if (!categoryMap[item.category]) {
+                    categoryMap[item.category] = 0;
+                }
+                categoryMap[item.category] += item.quantity;
+            });
+            
+            internalCategoryChart.data.labels = Object.keys(categoryMap);
+            internalCategoryChart.data.datasets[0].data = Object.values(categoryMap);
+            internalCategoryChart.update();
+        }
+
+        function updateExternalCategoryChart() {
+            const externalStock = allStockData.filter(item => item.stockType === 'External-Use');
+            const categoryMap = {};
+            
+            externalStock.forEach(item => {
+                if (!categoryMap[item.category]) {
+                    categoryMap[item.category] = 0;
+                }
+                categoryMap[item.category] += item.quantity;
+            });
+            
+            externalCategoryChart.data.labels = Object.keys(categoryMap);
+            externalCategoryChart.data.datasets[0].data = Object.values(categoryMap);
+            externalCategoryChart.update();
+        }
+
+        function updateMovementTrendChart() {
+            // Similar logic to updateMovementTrends but for chart
+            const months = [];
+            const internalTrend = [];
+            const externalTrend = [];
+            
+            const today = new Date();
+            for (let i = 5; i >= 0; i--) {
+                const month = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                months.push(month.toLocaleDateString('en-US', { month: 'short' }));
+                
+                const monthIssues = filteredData.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return recordDate.getMonth() === month.getMonth() && 
+                           recordDate.getFullYear() === month.getFullYear();
+                });
+                
+                internalTrend.push(monthIssues.filter(r => r.stockType === 'Internal-Use').length);
+                externalTrend.push(monthIssues.filter(r => r.stockType === 'External-Use').length);
+            }
+            
+            movementTrendChart.data.labels = months;
+            movementTrendChart.data.datasets[0].data = internalTrend;
+            movementTrendChart.data.datasets[1].data = externalTrend;
+            movementTrendChart.update();
+        }
+
+        function updateCostDistributionChart() {
+            const categoryMap = {};
+            allStockData.forEach(item => {
+                if (!categoryMap[item.category]) {
+                    categoryMap[item.category] = 0;
+                }
+                categoryMap[item.category] += item.quantity * item.unitCost;
+            });
+            
+            costDistributionChart.data.labels = Object.keys(categoryMap);
+            costDistributionChart.data.datasets[0].data = Object.values(categoryMap);
+            costDistributionChart.update();
+        }
+
+        // Export functions
+        function exportInternalReport() {
+            alert('Internal report export would be implemented here');
+            // Implementation would generate CSV/PDF
+        }
+
+        function exportExternalReport() {
+            alert('External report export would be implemented here');
+        }
+
+        function exportDetailedAnalysis() {
+            alert('Detailed analysis export would be implemented here');
+        }
+
+        function exportAllCharts() {
+            alert('Chart export functionality would be implemented here');
+        }
+
+        // Report generation
+        function generateFullReport() {
+            const reportWindow = window.open('', '_blank');
+            reportWindow.document.write(`
+                <html>
+                <head>
+                    <title>SCM Full Stock Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+                        .section { margin: 30px 0; }
+                        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+                        .kpi-box { border: 1px solid #ddd; padding: 15px; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                        th { background-color: #f5f5f5; }
+                        .recommendation { background-color: #f0f8ff; padding: 15px; margin: 10px 0; border-left: 4px solid #007bff; }
+                        .footer { margin-top: 50px; border-top: 1px solid #000; padding-top: 20px; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>SCM Stock Control System</h1>
+                        <h2>Comprehensive Stock Analysis Report</h2>
+                        <p>Generated: ${new Date().toLocaleString()}</p>
+                        <p>Period: ${reportPeriod}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Executive Summary</h3>
+                        <p>This report provides comprehensive analysis of stock management performance.</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Key Performance Indicators</h3>
+                        <div class="kpi-grid">
+                            <div class="kpi-box">
+                                <strong>Total Stock Value</strong><br>
+                                <span id="report-total-value">P ${allStockData.reduce((s, i) => s + (i.quantity * i.unitCost), 0).toFixed(2)}</span>
+                            </div>
+                            <div class="kpi-box">
+                                <strong>Low Stock Items</strong><br>
+                                <span>${allStockData.filter(i => i.quantity < 10).length}</span>
+                            </div>
+                            <div class="kpi-box">
+                                <strong>Total Issues This Period</strong><br>
+                                <span>${filteredData.length}</span>
+                            </div>
+                            <div class="kpi-box">
+                                <strong>Stock Turnover Ratio</strong><br>
+                                <span>${document.getElementById('kpi-turnover').textContent}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Top Recommendations</h3>
+                        <div class="recommendation">
+                            <strong>Immediate Actions:</strong>
+                            <ul>
+                                ${Array.from(document.getElementById('urgent-actions').children).map(li => `<li>${li.textContent}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <p><strong>SCM Principle:</strong> "Data without analysis is just numbers. Analysis without action is just theory."</p>
+                        <p>End of Report</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            reportWindow.document.close();
+        }
+
+        function generateExecutiveSummary() {
+            const content = document.getElementById('executive-content');
+            content.innerHTML = `
+                <div class="executive-summary">
+                    <h3>Executive Summary</h3>
+                    <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                    <p><strong>Report Period:</strong> ${reportPeriod}</p>
+                    
+                    <div class="executive-kpis">
+                        <div class="executive-kpi">
+                            <strong>Total Inventory Value:</strong> 
+                            <span>P ${allStockData.reduce((s, i) => s + (i.quantity * i.unitCost), 0).toFixed(2)}</span>
+                        </div>
+                        <div class="executive-kpi">
+                            <strong>Active Stock Items:</strong> 
+                            <span>${allStockData.length}</span>
+                        </div>
+                        <div class="executive-kpi">
+                            <strong>Stock Turnover Ratio:</strong> 
+                            <span>${document.getElementById('kpi-turnover').textContent}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="key-findings">
+                        <h4>Key Findings</h4>
+                        <ul>
+                            <li>${allStockData.filter(i => i.quantity < 10).length} items require immediate reordering</li>
+                            <li>${filteredData.length} stock movements recorded in selected period</li>
+                            <li>Internal stock represents ${document.getElementById('kpi-efficiency').textContent} of total inventory value</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="recommendations">
+                        <h4>Top 3 Recommendations</h4>
+                        <ol>
+                            <li>Address low stock items within 7 days</li>
+                            <li>Review slow-moving inventory for potential write-off</li>
+                            <li>Consider negotiating better terms with top 3 suppliers</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="conclusion">
+                        <p><strong>Conclusion:</strong> The stock management system is operational with clear visibility. 
+                        Focus should be on optimizing stock levels and improving turnover rates.</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('executive-modal').style.display = 'block';
+        }
+
+        function closeExecutiveModal() {
+            document.getElementById('executive-modal').style.display = 'none';
+        }
+
+        function printExecutiveSummary() {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(document.getElementById('executive-content').innerHTML);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function printReport() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

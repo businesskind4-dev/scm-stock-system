@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Stock | SCM Stock Control</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+    <!-- System Header -->
+    <header>
+        <div class="system-identity">
+            <h1>📦 SCM Stock Control System</h1>
+            <p class="system-tagline">Visibility. Control. Efficiency.</p>
+        </div>
+        <div class="user-info">
+            <span id="current-date"></span>
+            <span id="system-status">🟢 Operational</span>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-navigation">
+        <ul>
+            <li><a href="index.html" class="nav-link">📊 Dashboard</a></li>
+            <li><a href="add - stock.html" class="nav-link">📥 Add Stock</a></li>
+            <li><a href="inventory.html" class="nav-link">📋 Inventory Tables</a></li>
+            <li><a href="issue - stock.html" class="nav-link active">📤 Issue Stock</a></li>
+            <li><a href="history.html" class="nav-link">📜 Stock History</a></li>
+            <li><a href="reports.html" class="nav-link">📈 Reports</a></li>
+        </ul>
+    </nav>
+
+    <!-- Issue Stock Content -->
+    <main class="issue-container">
+        <!-- Page Header -->
+        <div class="issue-header">
+            <div class="header-content">
+                <h2>📤 Issue Stock from Inventory</h2>
+                <p class="page-subtitle">SCM Principle: No stock moves without record, reason, and responsibility.</p>
+            </div>
+            <div class="header-badges">
+                <span class="badge internal-badge">🏢 Internal-Use Stock</span>
+                <span class="badge external-badge">💰 External-Use Stock</span>
+            </div>
+        </div>
+
+        <!-- Two-Column Layout -->
+        <div class="issue-layout">
+            <!-- Left Column: Issue Form -->
+            <div class="issue-form-column">
+                <div class="form-card">
+                    <h3>Stock Issuance Form</h3>
+                    
+                    <form id="issue-form">
+                        <!-- Item Selection -->
+                        <div class="form-section">
+                            <h4>1. Select Item to Issue</h4>
+                            <div class="form-group">
+                                <label for="stock-type-select">Stock Type *</label>
+                                <select id="stock-type-select" required onchange="updateItemDropdown()">
+                                    <option value="">Select Type</option>
+                                    <option value="internal">Internal-Use Stock</option>
+                                    <option value="external">External-Use (Resale) Stock</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="item-select">Item Name *</label>
+                                <select id="item-select" required onchange="updateItemDetails()">
+                                    <option value="">Select an item first</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Item Details (Auto-filled) -->
+                        <div class="form-section" id="item-details-section" style="display: none;">
+                            <h4>2. Item Details</h4>
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Current Quantity:</span>
+                                    <span class="detail-value" id="current-quantity">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Unit Cost:</span>
+                                    <span class="detail-value" id="current-unit-cost">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Category:</span>
+                                    <span class="detail-value" id="current-category">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Supplier:</span>
+                                    <span class="detail-value" id="current-supplier">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Issuance Details -->
+                        <div class="form-section">
+                            <h4>3. Issuance Details</h4>
+                            
+                            <div class="form-group">
+                                <label for="issue-quantity">Quantity to Issue *</label>
+                                <input type="number" id="issue-quantity" min="1" required 
+                                       placeholder="Enter quantity" oninput="validateQuantity()">
+                                <div class="validation-message" id="quantity-validation"></div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="issued-to">Issued To / Person Responsible *</label>
+                                    <input type="text" id="issued-to" required 
+                                           placeholder="e.g., John Doe, Department, Client Name">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="issue-date">Issue Date *</label>
+                                    <input type="date" id="issue-date" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="reason">Reason / Purpose *</label>
+                                <select id="reason" required>
+                                    <option value="">Select Reason</option>
+                                    <option value="Internal Use">Internal Use</option>
+                                    <option value="Client Project">Client Project</option>
+                                    <option value="Resale">Resale</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Replacement">Replacement</option>
+                                    <option value="Emergency">Emergency</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="issue-notes">Additional Notes</label>
+                                <textarea id="issue-notes" rows="3" 
+                                          placeholder="Project details, location, special instructions..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="clearIssueForm()">
+                                🗑️ Clear Form
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                📤 Issue Stock
+                            </button>
+                            <button type="button" class="btn-tertiary" onclick="viewHistory()">
+                                📜 View History
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="stats-card">
+                    <h4>Today's Issuance</h4>
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-label">Items Issued</span>
+                            <span class="stat-value" id="today-count">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Quantity</span>
+                            <span class="stat-value" id="today-quantity">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Preview & Recent -->
+            <div class="issue-preview-column">
+                <!-- Issuance Preview -->
+                <div class="preview-card">
+                    <h3>Issuance Preview</h3>
+                    <div class="preview-content">
+                        <div class="preview-item" id="preview-item">
+                            <div class="preview-header">
+                                <span class="preview-type" id="preview-type">-</span>
+                                <span class="preview-name" id="preview-name">No item selected</span>
+                            </div>
+                            <div class="preview-details">
+                                <div class="preview-row">
+                                    <span>Quantity to Issue:</span>
+                                    <strong id="preview-quantity">-</strong>
+                                </div>
+                                <div class="preview-row">
+                                    <span>Remaining After:</span>
+                                    <strong id="preview-remaining">-</strong>
+                                </div>
+                                <div class="preview-row">
+                                    <span>Issued To:</span>
+                                    <span id="preview-issued-to">-</span>
+                                </div>
+                                <div class="preview-row">
+                                    <span>Reason:</span>
+                                    <span id="preview-reason">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preview-warning" id="preview-warning" style="display: none;">
+                        ⚠️ This will bring stock below minimum level (10 units)
+                    </div>
+                </div>
+
+                <!-- Recent Issues -->
+                <div class="recent-issues-card">
+                    <div class="card-header">
+                        <h3>Recent Issues</h3>
+                        <button class="small-btn" onclick="refreshRecentIssues()">🔄</button>
+                    </div>
+                    <div class="recent-list" id="recent-issues-list">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="empty-state">
+                            <p>No recent issues</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions-card">
+                    <h4>Quick Actions</h4>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="window.location.href='inventory.html'">
+                            📋 View Inventory
+                        </button>
+                        <button class="action-btn" onclick="window.location.href='history.html'">
+                            📜 Full History
+                        </button>
+                        <button class="action-btn" onclick="printIssueSlip()">
+                            🖨️ Print Slip
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="success-modal" class="modal">
+            <div class="modal-content success-modal">
+                <div class="modal-header">
+                    <h3>✅ Stock Issued Successfully</h3>
+                    <span class="close-modal" onclick="closeSuccessModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="success-details">
+                        <p><strong>Item:</strong> <span id="success-item"></span></p>
+                        <p><strong>Quantity Issued:</strong> <span id="success-quantity"></span></p>
+                        <p><strong>Issued To:</strong> <span id="success-issued-to"></span></p>
+                        <p><strong>Remaining Balance:</strong> <span id="success-balance"></span></p>
+                        <p><strong>Reference ID:</strong> <span id="success-id"></span></p>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-secondary" onclick="closeSuccessModal()">
+                            Close
+                        </button>
+                        <button class="btn-primary" onclick="issueAnother()">
+                            Issue Another Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- System Footer -->
+    <footer class="system-footer">
+        <div class="footer-content">
+            <p><strong>SCM Stock Control System</strong> | Built on Supply Chain Discipline</p>
+            <p class="footer-principle">
+                Principle: "Accountability in outbound flow eliminates stock losses."
+            </p>
+            <p class="footer-version">Stock Issuance Module | Version 1.0</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Issue Stock Page -->
+    <script>
+        let currentItems = [];
+        let selectedItem = null;
+        let todayIssues = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('issue-date').value = today;
+            document.getElementById('current-date').textContent = 
+                new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            
+            // Load today's issues
+            loadTodayIssues();
+            updateTodayStats();
+            
+            // Update preview on form changes
+            document.getElementById('issue-quantity').addEventListener('input', updatePreview);
+            document.getElementById('issued-to').addEventListener('input', updatePreview);
+            document.getElementById('reason').addEventListener('change', updatePreview);
+            document.getElementById('issue-notes').addEventListener('input', updatePreview);
+            
+            // Handle URL parameters (if coming from inventory page)
+            handleUrlParameters();
+        });
+
+        // Update item dropdown based on selected stock type
+        function updateItemDropdown() {
+            const stockType = document.getElementById('stock-type-select').value;
+            const itemSelect = document.getElementById('item-select');
+            
+            // Clear existing options
+            itemSelect.innerHTML = '<option value="">Select an item first</option>';
+            
+            if (!stockType) {
+                document.getElementById('item-details-section').style.display = 'none';
+                selectedItem = null;
+                updatePreview();
+                return;
+            }
+            
+            // Load appropriate items
+            const storageKey = stockType === 'internal' ? 'internalStock' : 'externalStock';
+            currentItems = JSON.parse(localStorage.getItem(storageKey)) || [];
+            
+            if (currentItems.length === 0) {
+                itemSelect.innerHTML = '<option value="">No items available in this category</option>';
+                document.getElementById('item-details-section').style.display = 'none';
+                selectedItem = null;
+                updatePreview();
+                return;
+            }
+            
+            // Add items to dropdown
+            currentItems.forEach(item => {
+                if (item.quantity > 0) { // Only show items with available stock
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = `${item.itemName} (${item.quantity} available)`;
+                    option.dataset.item = JSON.stringify(item);
+                    itemSelect.appendChild(option);
+                }
+            });
+            
+            // Show first item details if available
+            if (currentItems.length > 0) {
+                updateItemDetails();
+            }
+        }
+
+        // Update item details when selection changes
+        function updateItemDetails() {
+            const itemSelect = document.getElementById('item-select');
+            const selectedId = parseInt(itemSelect.value);
+            
+            if (!selectedId) {
+                document.getElementById('item-details-section').style.display = 'none';
+                selectedItem = null;
+                updatePreview();
+                return;
+            }
+            
+            // Find selected item
+            selectedItem = currentItems.find(item => item.id === selectedId);
+            
+            if (selectedItem) {
+                // Update details section
+                document.getElementById('current-quantity').textContent = selectedItem.quantity;
+                document.getElementById('current-unit-cost').textContent = `P ${selectedItem.unitCost.toFixed(2)}`;
+                document.getElementById('current-category').textContent = selectedItem.category;
+                document.getElementById('current-supplier').textContent = selectedItem.supplierName;
+                
+                document.getElementById('item-details-section').style.display = 'block';
+                
+                // Update preview
+                updatePreview();
+            }
+        }
+
+        // Validate quantity input
+        function validateQuantity() {
+            const quantityInput = document.getElementById('issue-quantity');
+            const validationMsg = document.getElementById('quantity-validation');
+            const quantity = parseInt(quantityInput.value);
+            
+            if (!selectedItem) {
+                validationMsg.textContent = 'Please select an item first';
+                validationMsg.className = 'validation-message error';
+                return false;
+            }
+            
+            if (isNaN(quantity) || quantity < 1) {
+                validationMsg.textContent = 'Please enter a valid quantity';
+                validationMsg.className = 'validation-message error';
+                return false;
+            }
+            
+            if (quantity > selectedItem.quantity) {
+                validationMsg.textContent = `Cannot issue more than ${selectedItem.quantity} units`;
+                validationMsg.className = 'validation-message error';
+                return false;
+            }
+            
+            if (quantity === selectedItem.quantity) {
+                validationMsg.textContent = '⚠️ This will completely deplete this item';
+                validationMsg.className = 'validation-message warning';
+                return true;
+            }
+            
+            if (selectedItem.quantity - quantity < 10) {
+                validationMsg.textContent = '⚠️ This will bring stock below minimum level';
+                validationMsg.className = 'validation-message warning';
+                return true;
+            }
+            
+            validationMsg.textContent = '✓ Quantity available';
+            validationMsg.className = 'validation-message success';
+            return true;
+        }
+
+        // Update preview panel
+        function updatePreview() {
+            const previewItem = document.getElementById('preview-item');
+            const previewWarning = document.getElementById('preview-warning');
+            
+            if (!selectedItem) {
+                previewItem.querySelector('.preview-name').textContent = 'No item selected';
+                previewItem.querySelector('#preview-quantity').textContent = '-';
+                previewItem.querySelector('#preview-remaining').textContent = '-';
+                previewItem.querySelector('#preview-issued-to').textContent = '-';
+                previewItem.querySelector('#preview-reason').textContent = '-';
+                previewItem.querySelector('.preview-type').textContent = '-';
+                previewWarning.style.display = 'none';
+                return;
+            }
+            
+            // Update preview values
+            const stockType = document.getElementById('stock-type-select').value;
+            const issueQuantity = parseInt(document.getElementById('issue-quantity').value) || 0;
+            const issuedTo = document.getElementById('issued-to').value || '-';
+            const reason = document.getElementById('reason').value || '-';
+            const remaining = selectedItem.quantity - issueQuantity;
+            
+            document.getElementById('preview-type').textContent = 
+                stockType === 'internal' ? '🏢 Internal' : '💰 External';
+            document.getElementById('preview-name').textContent = selectedItem.itemName;
+            document.getElementById('preview-quantity').textContent = issueQuantity || '-';
+            document.getElementById('preview-remaining').textContent = isNaN(remaining) ? '-' : remaining;
+            document.getElementById('preview-issued-to').textContent = issuedTo;
+            document.getElementById('preview-reason').textContent = reason;
+            
+            // Show warning if quantity is low
+            if (remaining < 10 && remaining > 0) {
+                previewWarning.style.display = 'block';
+            } else {
+                previewWarning.style.display = 'none';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('issue-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Get form values
+            const stockType = document.getElementById('stock-type-select').value;
+            const issueQuantity = parseInt(document.getElementById('issue-quantity').value);
+            const issuedTo = document.getElementById('issued-to').value;
+            const issueDate = document.getElementById('issue-date').value;
+            const reason = document.getElementById('reason').value;
+            const issueNotes = document.getElementById('issue-notes').value;
+            
+            // Calculate new quantity
+            const newQuantity = selectedItem.quantity - issueQuantity;
+            
+            // Update inventory
+            const storageKey = stockType === 'internal' ? 'internalStock' : 'externalStock';
+            let items = JSON.parse(localStorage.getItem(storageKey)) || [];
+            const itemIndex = items.findIndex(item => item.id === selectedItem.id);
+            
+            if (itemIndex !== -1) {
+                items[itemIndex].quantity = newQuantity;
+                localStorage.setItem(storageKey, JSON.stringify(items));
+            }
+            
+            // Create issue record
+            const issueRecord = {
+                id: Date.now(),
+                itemId: selectedItem.id,
+                itemName: selectedItem.itemName,
+                stockType: stockType === 'internal' ? 'Internal-Use' : 'External-Use',
+                category: selectedItem.category,
+                quantityIssued: issueQuantity,
+                unitCost: selectedItem.unitCost,
+                totalValue: issueQuantity * selectedItem.unitCost,
+                issuedTo: issuedTo,
+                reason: reason,
+                notes: issueNotes,
+                date: issueDate,
+                timestamp: new Date().toISOString(),
+                remainingBalance: newQuantity,
+                issuedBy: 'System User' // Will be replaced with login later
+            };
+            
+            // Save to issue history
+            let issueHistory = JSON.parse(localStorage.getItem('issueHistory')) || [];
+            issueHistory.push(issueRecord);
+            localStorage.setItem('issueHistory', JSON.stringify(issueHistory));
+            
+            // Update today's issues
+            loadTodayIssues();
+            updateTodayStats();
+            refreshRecentIssues();
+            
+            // Show success modal
+            showSuccessModal(issueRecord);
+            
+            // Clear form for next entry
+            clearIssueForm();
+        });
+
+        // Validate entire form
+        function validateForm() {
+            if (!selectedItem) {
+                alert('Please select an item to issue');
+                return false;
+            }
+            
+            if (!validateQuantity()) {
+                return false;
+            }
+            
+            const issuedTo = document.getElementById('issued-to').value.trim();
+            if (!issuedTo) {
+                alert('Please enter who the stock is being issued to');
+                return false;
+            }
+            
+            const reason = document.getElementById('reason').value;
+            if (!reason) {
+                alert('Please select a reason for issuance');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Show success modal
+        function showSuccessModal(issueRecord) {
+            document.getElementById('success-item').textContent = issueRecord.itemName;
+            document.getElementById('success-quantity').textContent = issueRecord.quantityIssued;
+            document.getElementById('success-issued-to').textContent = issueRecord.issuedTo;
+            document.getElementById('success-balance').textContent = issueRecord.remainingBalance;
+            document.getElementById('success-id').textContent = `ISS-${issueRecord.id}`;
+            
+            document.getElementById('success-modal').style.display = 'block';
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').style.display = 'none';
+        }
+
+        function issueAnother() {
+            closeSuccessModal();
+            document.getElementById('issue-form').reset();
+            document.getElementById('issue-date').value = new Date().toISOString().split('T')[0];
+            selectedItem = null;
+            document.getElementById('item-details-section').style.display = 'none';
+            updatePreview();
+            document.getElementById('stock-type-select').focus();
+        }
+
+        // Load today's issues
+        function loadTodayIssues() {
+            const today = new Date().toISOString().split('T')[0];
+            const issueHistory = JSON.parse(localStorage.getItem('issueHistory')) || [];
+            todayIssues = issueHistory.filter(issue => issue.date === today);
+        }
+
+        // Update today's stats
+        function updateTodayStats() {
+            const todayCount = todayIssues.length;
+            const todayQuantity = todayIssues.reduce((sum, issue) => sum + issue.quantityIssued, 0);
+            
+            document.getElementById('today-count').textContent = todayCount;
+            document.getElementById('today-quantity').textContent = todayQuantity;
+        }
+
+        // Refresh recent issues list
+        function refreshRecentIssues() {
+            const recentList = document.getElementById('recent-issues-list');
+            const issueHistory = JSON.parse(localStorage.getItem('issueHistory')) || [];
+            const recentIssues = issueHistory.slice(-5).reverse();
+            
+            if (recentIssues.length === 0) {
+                recentList.innerHTML = `
+                    <div class="empty-state">
+                        <p>No recent issues</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            recentList.innerHTML = '';
+            recentIssues.forEach(issue => {
+                const issueElement = document.createElement('div');
+                issueElement.className = 'recent-issue-item';
+                issueElement.innerHTML = `
+                    <div class="recent-issue-header">
+                        <span class="recent-item-name">${issue.itemName}</span>
+                        <span class="recent-quantity">-${issue.quantityIssued}</span>
+                    </div>
+                    <div class="recent-issue-details">
+                        <span>To: ${issue.issuedTo}</span>
+                        <span>${issue.date}</span>
+                    </div>
+                `;
+                recentList.appendChild(issueElement);
+            });
+        }
+
+        // Clear form
+        function clearIssueForm() {
+            if (confirm('Clear all form fields?')) {
+                document.getElementById('issue-form').reset();
+                document.getElementById('issue-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('item-details-section').style.display = 'none';
+                selectedItem = null;
+                updatePreview();
+                document.getElementById('quantity-validation').textContent = '';
+            }
+        }
+
+        // View history
+        function viewHistory() {
+            window.location.href = 'history.html';
+        }
+
+        // Handle URL parameters (for direct issuance from inventory)
+        function handleUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemName = urlParams.get('item');
+            const itemType = urlParams.get('type');
+            const maxQuantity = urlParams.get('max');
+            
+            if (itemName && itemType) {
+                // Set stock type
+                const stockType = itemType.includes('Internal') ? 'internal' : 'external';
+                document.getElementById('stock-type-select').value = stockType;
+                
+                // Update dropdown
+                updateItemDropdown();
+                
+                // Find and select the item
+                setTimeout(() => {
+                    const itemSelect = document.getElementById('item-select');
+                    for (let option of itemSelect.options) {
+                        if (option.textContent.includes(itemName)) {
+                            itemSelect.value = option.value;
+                            updateItemDetails();
+                            
+                            // Set max quantity hint
+                            if (maxQuantity) {
+                                document.getElementById('issue-quantity').placeholder = `Max: ${maxQuantity}`;
+                            }
+                            break;
+                        }
+                    }
+                }, 100);
+            }
+        }
+
+        // Print issue slip
+        function printIssueSlip() {
+            if (!selectedItem) {
+                alert('Please select an item first');
+                return;
+            }
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Stock Issue Slip</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                        .details { margin: 20px 0; }
+                        .detail-row { display: flex; margin: 5px 0; }
+                        .detail-label { font-weight: bold; width: 150px; }
+                        .footer { margin-top: 30px; border-top: 1px solid #000; padding-top: 10px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>SCM Stock Control System</h2>
+                        <h3>Stock Issue Slip</h3>
+                        <p>Date: ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    <div class="details">
+                        <div class="detail-row">
+                            <div class="detail-label">Item Name:</div>
+                            <div>${selectedItem.itemName}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Stock Type:</div>
+                            <div>${document.getElementById('stock-type-select').value === 'internal' ? 'Internal-Use' : 'External-Use'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Quantity to Issue:</div>
+                            <div>${document.getElementById('issue-quantity').value || 'Not specified'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Issued To:</div>
+                            <div>${document.getElementById('issued-to').value || 'Not specified'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Reason:</div>
+                            <div>${document.getElementById('reason').value || 'Not specified'}</div>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <p><strong>SCM Principle:</strong> "Accountability in outbound flow eliminates stock losses."</p>
+                        <p>Printed: ${new Date().toLocaleString()}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // Initialize recent issues
+        refreshRecentIssues();
+    </script>
+</body>
+</html>

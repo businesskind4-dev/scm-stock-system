@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock History | SCM Stock Control</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/app.js" defer></script>
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- System Header -->
+    <header>
+        <div class="system-identity">
+            <h1>📦 SCM Stock Control System</h1>
+            <p class="system-tagline">Visibility. Control. Efficiency.</p>
+        </div>
+        <div class="user-info">
+            <span id="current-date"></span>
+            <span id="system-status">🟢 Operational</span>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-navigation">
+        <ul>
+            <li><a href="index.html" class="nav-link">📊 Dashboard</a></li>
+            <li><a href="add - stock.html" class="nav-link">📥 Add Stock</a></li>
+            <li><a href="inventory.html" class="nav-link">📋 Inventory Tables</a></li>
+            <li><a href="issue - stock.html" class="nav-link">📤 Issue Stock</a></li>
+            <li><a href="history.html" class="nav-link active">📜 Stock History</a></li>
+            <li><a href="reports.html" class="nav-link">📈 Reports</a></li>
+        </ul>
+    </nav>
+
+    <!-- History Content -->
+    <main class="history-container">
+        <!-- Page Header -->
+        <div class="history-header">
+            <div class="header-content">
+                <h2>📜 Complete Stock Movement History</h2>
+                <p class="page-subtitle">SCM Principle: Institutional memory prevents repeated mistakes.</p>
+            </div>
+            <div class="header-actions">
+                <button class="action-btn export-btn" onclick="exportHistoryToCSV()">
+                    📥 Export CSV
+                </button>
+                <button class="action-btn print-btn" onclick="printHistory()">
+                    🖨️ Print Report
+                </button>
+                <button class="action-btn refresh-btn" onclick="loadHistoryData()">
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Dashboard -->
+        <div class="history-stats">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <span class="stat-label">Total Issues</span>
+                    <span class="stat-value" id="total-issues">0</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-content">
+                    <span class="stat-label">Internal Stock Issued</span>
+                    <span class="stat-value" id="internal-issues">0</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <span class="stat-label">External Stock Issued</span>
+                    <span class="stat-value" id="external-issues">0</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                    <span class="stat-label">Total Quantity Issued</span>
+                    <span class="stat-value" id="total-quantity">0</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">💵</div>
+                <div class="stat-content">
+                    <span class="stat-label">Total Value Issued</span>
+                    <span class="stat-value" id="total-value">P 0.00</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-content">
+                    <span class="stat-label">This Month</span>
+                    <span class="stat-value" id="this-month">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Filters -->
+        <div class="history-filters">
+            <div class="filter-section">
+                <h4>Filter History</h4>
+                
+                <div class="filter-controls">
+                    <!-- Date Range -->
+                    <div class="filter-group">
+                        <label for="date-from">From Date</label>
+                        <input type="date" id="date-from" onchange="applyFilters()">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="date-to">To Date</label>
+                        <input type="date" id="date-to" onchange="applyFilters()">
+                    </div>
+                    
+                    <!-- Stock Type Filter -->
+                    <div class="filter-group">
+                        <label for="filter-type">Stock Type</label>
+                        <select id="filter-type" onchange="applyFilters()">
+                            <option value="">All Types</option>
+                            <option value="Internal-Use">Internal-Use Only</option>
+                            <option value="External-Use">External-Use Only</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Reason Filter -->
+                    <div class="filter-group">
+                        <label for="filter-reason">Reason</label>
+                        <select id="filter-reason" onchange="applyFilters()">
+                            <option value="">All Reasons</option>
+                            <option value="Internal Use">Internal Use</option>
+                            <option value="Client Project">Client Project</option>
+                            <option value="Resale">Resale</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Replacement">Replacement</option>
+                            <option value="Emergency">Emergency</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Clear Filters -->
+                    <div class="filter-group">
+                        <label>&nbsp;</label>
+                        <button class="btn-secondary" onclick="clearFilters()">
+                            🗑️ Clear Filters
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Search -->
+                <div class="search-box">
+                    <input type="text" id="history-search" 
+                           placeholder="Search items, persons, notes..." 
+                           onkeyup="applyFilters()">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="history-table-container">
+            <div class="table-header">
+                <h3>Stock Issuance Records</h3>
+                <div class="table-info">
+                    Showing <span id="showing-count">0</span> of <span id="total-count">0</span> records
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="history-table" id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reference ID</th>
+                            <th>Item Name</th>
+                            <th>Stock Type</th>
+                            <th>Quantity Issued</th>
+                            <th>Unit Cost</th>
+                            <th>Total Value</th>
+                            <th>Issued To</th>
+                            <th>Reason</th>
+                            <th>Remaining Balance</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- Will be populated by JavaScript -->
+                        <tr>
+                            <td colspan="12" class="no-data">
+                                <div class="empty-state">
+                                    <p>📭 No stock issuance records found</p>
+                                    <p class="empty-subtitle">Start issuing stock to see history here</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination" id="pagination" style="display: none;">
+                <button class="page-btn" onclick="changePage(-1)" id="prev-btn">← Previous</button>
+                <span class="page-info">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+                <button class="page-btn" onclick="changePage(1)" id="next-btn">Next →</button>
+            </div>
+        </div>
+
+        <!-- Analysis Section -->
+        <div class="history-analysis">
+            <div class="analysis-card">
+                <h4>📈 Monthly Issuance Trend</h4>
+                <div class="chart-container">
+                    <canvas id="monthly-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="analysis-card">
+                <h4>🏷️ Top 5 Issued Items</h4>
+                <div class="top-items-list" id="top-items-list">
+                    <!-- Will be populated by JavaScript -->
+                    <div class="empty-state">
+                        <p>No data available</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="analysis-card">
+                <h4>👥 Top Recipients</h4>
+                <div class="recipients-list" id="recipients-list">
+                    <!-- Will be populated by JavaScript -->
+                    <div class="empty-state">
+                        <p>No data available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Trail Notes -->
+        <div class="audit-trail">
+            <h4>🔍 Audit Trail Information</h4>
+            <div class="audit-content">
+                <p><strong>Data Integrity:</strong> All records are timestamped and cannot be modified after creation.</p>
+                <p><strong>Purpose:</strong> This history serves as the official audit trail for stock movements.</p>
+                <p><strong>Retention:</strong> Records are maintained in browser storage until manually cleared.</p>
+                <p><strong>Export:</strong> Use CSV export for permanent record-keeping and external audits.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- System Footer -->
+    <footer class="system-footer">
+        <div class="footer-content">
+            <p><strong>SCM Stock Control System</strong> | Built on Supply Chain Discipline</p>
+            <p class="footer-principle">
+                Principle: "An accurate history is the best defense against inventory disputes."
+            </p>
+            <p class="footer-version">Audit Trail Module | Version 1.0</p>
+        </div>
+    </footer>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📋 Issuance Details</h3>
+                <span class="close-modal" onclick="closeDetailModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-view" id="detail-view">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for History Page -->
+    <script>
+        // Chart.js for visualizations
+        let monthlyChart = null;
+        
+        // Pagination variables
+        let currentPage = 1;
+        const recordsPerPage = 10;
+        let filteredHistory = [];
+        let allHistory = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set date inputs to current month
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            document.getElementById('date-from').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('date-to').value = today.toISOString().split('T')[0];
+            
+            // Set current date display
+            document.getElementById('current-date').textContent = 
+                today.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            
+            // Load initial data
+            loadHistoryData();
+            
+            // Initialize chart
+            initializeChart();
+        });
+
+        // Load history data
+        function loadHistoryData() {
+            allHistory = JSON.parse(localStorage.getItem('issueHistory')) || [];
+            allHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            applyFilters();
+            updateStatistics();
+            updateAnalysis();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            let filtered = [...allHistory];
+            
+            // Date filter
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            
+            if (dateFrom) {
+                filtered = filtered.filter(record => record.date >= dateFrom);
+            }
+            
+            if (dateTo) {
+                filtered = filtered.filter(record => record.date <= dateTo);
+            }
+            
+            // Stock type filter
+            const stockType = document.getElementById('filter-type').value;
+            if (stockType) {
+                filtered = filtered.filter(record => record.stockType === stockType);
+            }
+            
+            // Reason filter
+            const reason = document.getElementById('filter-reason').value;
+            if (reason) {
+                filtered = filtered.filter(record => record.reason === reason);
+            }
+            
+            // Search filter
+            const searchTerm = document.getElementById('history-search').value.toLowerCase();
+            if (searchTerm) {
+                filtered = filtered.filter(record => 
+                    record.itemName.toLowerCase().includes(searchTerm) ||
+                    record.issuedTo.toLowerCase().includes(searchTerm) ||
+                    (record.notes && record.notes.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            filteredHistory = filtered;
+            renderHistoryTable();
+            updatePagination();
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            document.getElementById('filter-type').value = '';
+            document.getElementById('filter-reason').value = '';
+            document.getElementById('history-search').value = '';
+            
+            applyFilters();
+        }
+
+        // Render history table
+        function renderHistoryTable() {
+            const tbody = document.getElementById('history-table-body');
+            const showingCount = document.getElementById('showing-count');
+            const totalCount = document.getElementById('total-count');
+            
+            // Update counts
+            showingCount.textContent = filteredHistory.length;
+            totalCount.textContent = allHistory.length;
+            
+            if (filteredHistory.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="12" class="no-data">
+                            <div class="empty-state">
+                                <p>📭 No records match your filters</p>
+                                <p class="empty-subtitle">Try adjusting your filter criteria</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Calculate pagination
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = Math.min(startIndex + recordsPerPage, filteredHistory.length);
+            const pageData = filteredHistory.slice(startIndex, endIndex);
+            
+            // Render table rows
+            tbody.innerHTML = '';
+            pageData.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.date}</td>
+                    <td><code class="ref-id">ISS-${record.id}</code></td>
+                    <td><strong>${record.itemName}</strong></td>
+                    <td>
+                        <span class="type-tag ${record.stockType === 'Internal-Use' ? 'internal-tag' : 'external-tag'}">
+                            ${record.stockType}
+                        </span>
+                    </td>
+                    <td class="${record.quantityIssued > 50 ? 'highlight-quantity' : ''}">
+                        <strong>-${record.quantityIssued}</strong>
+                    </td>
+                    <td>P ${record.unitCost.toFixed(2)}</td>
+                    <td class="value-cell">
+                        <strong>P ${record.totalValue.toFixed(2)}</strong>
+                    </td>
+                    <td>${record.issuedTo}</td>
+                    <td><span class="reason-tag">${record.reason}</span></td>
+                    <td>
+                        <span class="balance-cell ${record.remainingBalance < 10 ? 'low-balance' : ''}">
+                            ${record.remainingBalance}
+                        </span>
+                    </td>
+                    <td class="notes-cell">${record.notes || '-'}</td>
+                    <td class="action-buttons">
+                        <button class="action-btn view-btn" onclick="viewDetails(${record.id})">
+                            👁️ View
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteRecord(${record.id})">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredHistory.length / recordsPerPage);
+            const pagination = document.getElementById('pagination');
+            const currentPageElem = document.getElementById('current-page');
+            const totalPagesElem = document.getElementById('total-pages');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            if (filteredHistory.length <= recordsPerPage) {
+                pagination.style.display = 'none';
+                return;
+            }
+            
+            pagination.style.display = 'flex';
+            currentPageElem.textContent = currentPage;
+            totalPagesElem.textContent = totalPages;
+            
+            // Disable buttons when appropriate
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            
+            prevBtn.style.opacity = prevBtn.disabled ? '0.5' : '1';
+            nextBtn.style.opacity = nextBtn.disabled ? '0.5' : '1';
+        }
+
+        // Change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredHistory.length / recordsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage < 1 || newPage > totalPages) {
+                return;
+            }
+            
+            currentPage = newPage;
+            renderHistoryTable();
+            updatePagination();
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            // Total issues
+            document.getElementById('total-issues').textContent = allHistory.length;
+            
+            // Internal vs external
+            const internalCount = allHistory.filter(record => record.stockType === 'Internal-Use').length;
+            const externalCount = allHistory.filter(record => record.stockType === 'External-Use').length;
+            
+            document.getElementById('internal-issues').textContent = internalCount;
+            document.getElementById('external-issues').textContent = externalCount;
+            
+            // Total quantity issued
+            const totalQuantity = allHistory.reduce((sum, record) => sum + record.quantityIssued, 0);
+            document.getElementById('total-quantity').textContent = totalQuantity;
+            
+            // Total value issued
+            const totalValue = allHistory.reduce((sum, record) => sum + record.totalValue, 0);
+            document.getElementById('total-value').textContent = `P ${totalValue.toFixed(2)}`;
+            
+            // This month's issues
+            const today = new Date();
+            const thisMonth = today.getMonth();
+            const thisYear = today.getFullYear();
+            
+            const thisMonthIssues = allHistory.filter(record => {
+                const recordDate = new Date(record.date);
+                return recordDate.getMonth() === thisMonth && recordDate.getFullYear() === thisYear;
+            }).length;
+            
+            document.getElementById('this-month').textContent = thisMonthIssues;
+        }
+
+        // Update analysis sections
+        function updateAnalysis() {
+            updateTopItems();
+            updateTopRecipients();
+            updateMonthlyChart();
+        }
+
+        // Update top items list
+        function updateTopItems() {
+            const topItemsList = document.getElementById('top-items-list');
+            
+            // Group by item name and sum quantities
+            const itemMap = {};
+            allHistory.forEach(record => {
+                if (!itemMap[record.itemName]) {
+                    itemMap[record.itemName] = 0;
+                }
+                itemMap[record.itemName] += record.quantityIssued;
+            });
+            
+            // Convert to array and sort
+            const topItems = Object.entries(itemMap)
+                .map(([name, quantity]) => ({ name, quantity }))
+                .sort((a, b) => b.quantity - a.quantity)
+                .slice(0, 5);
+            
+            if (topItems.length === 0) {
+                topItemsList.innerHTML = `
+                    <div class="empty-state">
+                        <p>No data available</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            topItemsList.innerHTML = '';
+            topItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'top-item';
+                itemElement.innerHTML = `
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-quantity">${item.quantity} units</div>
+                `;
+                topItemsList.appendChild(itemElement);
+            });
+        }
+
+        // Update top recipients list
+        function updateTopRecipients() {
+            const recipientsList = document.getElementById('recipients-list');
+            
+            // Group by issuedTo
+            const recipientMap = {};
+            allHistory.forEach(record => {
+                if (!recipientMap[record.issuedTo]) {
+                    recipientMap[record.issuedTo] = 0;
+                }
+                recipientMap[record.issuedTo]++;
+            });
+            
+            // Convert to array and sort
+            const topRecipients = Object.entries(recipientMap)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 5);
+            
+            if (topRecipients.length === 0) {
+                recipientsList.innerHTML = `
+                    <div class="empty-state">
+                        <p>No data available</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            recipientsList.innerHTML = '';
+            topRecipients.forEach(recipient => {
+                const recipientElement = document.createElement('div');
+                recipientElement.className = 'recipient-item';
+                recipientElement.innerHTML = `
+                    <div class="recipient-name">${recipient.name}</div>
+                    <div class="recipient-count">${recipient.count} issues</div>
+                `;
+                recipientsList.appendChild(recipientElement);
+            });
+        }
+
+        // Initialize chart
+        function initializeChart() {
+            const ctx = document.getElementById('monthly-chart').getContext('2d');
+            
+            monthlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Internal-Use',
+                        data: [],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'External-Use',
+                        data: [],
+                        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantity Issued'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            updateMonthlyChart();
+        }
+
+        // Update monthly chart
+        function updateMonthlyChart() {
+            if (!monthlyChart || allHistory.length === 0) {
+                return;
+            }
+            
+            // Get last 6 months
+            const months = [];
+            const today = new Date();
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                months.push(date.toLocaleDateString('en-US', { month: 'short' }));
+            }
+            
+            // Initialize data arrays
+            const internalData = new Array(6).fill(0);
+            const externalData = new Array(6).fill(0);
+            
+            // Populate data
+            allHistory.forEach(record => {
+                const recordDate = new Date(record.date);
+                const monthDiff = (today.getMonth() - recordDate.getMonth()) + 
+                                 (12 * (today.getFullYear() - recordDate.getFullYear()));
+                
+                if (monthDiff >= 0 && monthDiff < 6) {
+                    const index = 5 - monthDiff;
+                    if (record.stockType === 'Internal-Use') {
+                        internalData[index] += record.quantityIssued;
+                    } else {
+                        externalData[index] += record.quantityIssued;
+                    }
+                }
+            });
+            
+            // Update chart
+            monthlyChart.data.labels = months;
+            monthlyChart.data.datasets[0].data = internalData;
+            monthlyChart.data.datasets[1].data = externalData;
+            monthlyChart.update();
+        }
+
+        // View record details
+        function viewDetails(recordId) {
+            const record = allHistory.find(r => r.id === recordId);
+            if (!record) return;
+            
+            const detailView = document.getElementById('detail-view');
+            detailView.innerHTML = `
+                <div class="detail-section">
+                    <h4>Item Information</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Item Name:</span>
+                            <span class="detail-value">${record.itemName}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Stock Type:</span>
+                            <span class="detail-value type-tag ${record.stockType === 'Internal-Use' ? 'internal-tag' : 'external-tag'}">
+                                ${record.stockType}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span class="detail-value">${record.category}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Issuance Details</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Quantity Issued:</span>
+                            <span class="detail-value">${record.quantityIssued} units</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Unit Cost:</span>
+                            <span class="detail-value">P ${record.unitCost.toFixed(2)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Value:</span>
+                            <span class="detail-value">P ${record.totalValue.toFixed(2)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Remaining Balance:</span>
+                            <span class="detail-value ${record.remainingBalance < 10 ? 'low-balance' : ''}">
+                                ${record.remainingBalance} units
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Recipient & Purpose</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Issued To:</span>
+                            <span class="detail-value">${record.issuedTo}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Reason:</span>
+                            <span class="detail-value">${record.reason}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Date:</span>
+                            <span class="detail-value">${record.date}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Additional Information</h4>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">Notes:</span>
+                        <div class="detail-value notes-box">${record.notes || 'No additional notes'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Reference ID:</span>
+                        <span class="detail-value ref-id">ISS-${record.id}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Timestamp:</span>
+                        <span class="detail-value">${new Date(record.timestamp).toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('detail-modal').style.display = 'block';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').style.display = 'none';
+        }
+
+        // Delete record
+        function deleteRecord(recordId) {
+            if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+                return;
+            }
+            
+            // Remove from history
+            let issueHistory = JSON.parse(localStorage.getItem('issueHistory')) || [];
+            issueHistory = issueHistory.filter(record => record.id !== recordId);
+            localStorage.setItem('issueHistory', JSON.stringify(issueHistory));
+            
+            // Reload data
+            loadHistoryData();
+            alert('Record deleted successfully!');
+        }
+
+        // Export to CSV
+        function exportHistoryToCSV() {
+            if (filteredHistory.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+            
+            const headers = ['Date', 'Reference ID', 'Item Name', 'Stock Type', 'Category', 'Quantity Issued', 
+                           'Unit Cost', 'Total Value', 'Issued To', 'Reason', 'Remaining Balance', 'Notes', 'Timestamp'];
+            
+            const csvData = [
+                headers.join(','),
+                ...filteredHistory.map(record => [
+                    `"${record.date}"`,
+                    `"ISS-${record.id}"`,
+                    `"${record.itemName}"`,
+                    `"${record.stockType}"`,
+                    `"${record.category}"`,
+                    record.quantityIssued,
+                    record.unitCost.toFixed(2),
+                    record.totalValue.toFixed(2),
+                    `"${record.issuedTo}"`,
+                    `"${record.reason}"`,
+                    record.remainingBalance,
+                    `"${record.notes || ''}"`,
+                    `"${record.timestamp}"`
+                ].join(','))
+            ];
+            
+            const csvContent = csvData.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scm-history-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Print history
+        function printHistory() {
+            const printWindow = window.open('', '_blank');
+            const printDate = new Date().toLocaleDateString();
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>SCM Stock History Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+                        .stat-box { border: 1px solid #ddd; padding: 10px; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f5f5f5; }
+                        .footer { margin-top: 30px; border-top: 1px solid #000; padding-top: 10px; font-size: 12px; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>SCM Stock Control System</h1>
+                        <h2>Stock Issuance History Report</h2>
+                        <p>Generated: ${printDate}</p>
+                        <p>Filtered Records: ${filteredHistory.length} of ${allHistory.length} total</p>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-box">
+                            <strong>Total Quantity Issued</strong><br>
+                            ${filteredHistory.reduce((sum, r) => sum + r.quantityIssued, 0)} units
+                        </div>
+                        <div class="stat-box">
+                            <strong>Total Value Issued</strong><br>
+                            P ${filteredHistory.reduce((sum, r) => sum + r.totalValue, 0).toFixed(2)}
+                        </div>
+                        <div class="stat-box">
+                            <strong>Time Period</strong><br>
+                            ${document.getElementById('date-from').value || 'Start'} to ${document.getElementById('date-to').value || 'End'}
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Value</th>
+                                <th>Issued To</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredHistory.slice(0, 50).map(record => `
+                                <tr>
+                                    <td>${record.date}</td>
+                                    <td>${record.itemName}</td>
+                                    <td>${record.stockType}</td>
+                                    <td>${record.quantityIssued}</td>
+                                    <td>P ${record.totalValue.toFixed(2)}</td>
+                                    <td>${record.issuedTo}</td>
+                                    <td>${record.reason}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    ${filteredHistory.length > 50 ? `<p><em>... and ${filteredHistory.length - 50} more records</em></p>` : ''}
+                    
+                    <div class="footer">
+                        <p><strong>SCM Principle:</strong> "An accurate history is the best defense against inventory disputes."</p>
+                        <p>System: SCM Stock Control | Module: Audit Trail | Page ${currentPage} of ${Math.ceil(filteredHistory.length / recordsPerPage)}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>

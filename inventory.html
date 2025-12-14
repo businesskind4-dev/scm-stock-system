@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory | SCM Stock Control</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+    <!-- System Header -->
+    <header>
+        <div class="system-identity">
+            <h1>📦 SCM Stock Control System</h1>
+            <p class="system-tagline">Visibility. Control. Efficiency.</p>
+        </div>
+        <div class="user-info">
+            <span id="current-date"></span>
+            <span id="system-status">🟢 Operational</span>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-navigation">
+        <ul>
+            <li><a href="index.html" class="nav-link">📊 Dashboard</a></li>
+            <li><a href="add - stock.html" class="nav-link">📥 Add Stock</a></li>
+            <li><a href="inventory.html" class="nav-link active">📋 Inventory Tables</a></li>
+            <li><a href="issue - stock.html" class="nav-link">📤 Issue Stock</a></li>
+            <li><a href="history.html" class="nav-link">📜 Stock History</a></li>
+            <li><a href="reports.html" class="nav-link">📈 Reports</a></li>
+        </ul>
+    </nav>
+
+    <!-- Inventory Content -->
+    <main class="inventory-container">
+        <!-- Page Header -->
+        <div class="inventory-header">
+            <div class="header-content">
+                <h2>📋 Complete Stock Inventory</h2>
+                <p class="page-subtitle">SCM Principle: Inventory accuracy enables planning accuracy.</p>
+            </div>
+            <div class="header-actions">
+                <button class="action-btn" onclick="exportToCSV()">
+                    📥 Export CSV
+                </button>
+                <button class="action-btn" onclick="refreshInventory()">
+                    🔄 Refresh
+                </button>
+                <button class="action-btn" onclick="toggleLowStockView()">
+                    ⚠️ Show Low Stock
+                </button>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="inventory-controls">
+            <div class="search-box">
+                <input type="text" id="global-search" placeholder="Search items, suppliers, categories..." 
+                       onkeyup="searchInventory()">
+                <span class="search-icon">🔍</span>
+            </div>
+            
+            <div class="filter-controls">
+                <select id="category-filter" onchange="filterInventory()">
+                    <option value="">All Categories</option>
+                    <option value="Office Supplies">Office Supplies</option>
+                    <option value="IT Equipment">IT Equipment</option>
+                    <option value="Maintenance Tools">Maintenance Tools</option>
+                    <option value="Raw Materials">Raw Materials</option>
+                    <option value="Packaging">Packaging</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Consumables">Consumables</option>
+                    <option value="Other">Other</option>
+                </select>
+                
+                <select id="stock-type-filter" onchange="filterInventory()">
+                    <option value="">All Stock Types</option>
+                    <option value="internal">Internal-Use Only</option>
+                    <option value="external">External-Use Only</option>
+                </select>
+                
+                <select id="sort-by" onchange="sortInventory()">
+                    <option value="name">Sort by Name</option>
+                    <option value="quantity">Sort by Quantity</option>
+                    <option value="value">Sort by Value</option>
+                    <option value="date">Sort by Date</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Inventory Summary -->
+        <div class="inventory-summary">
+            <div class="summary-card">
+                <span class="summary-label">Total Items</span>
+                <span class="summary-value" id="total-items-count">0</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Total Value</span>
+                <span class="summary-value" id="total-value">P 0.00</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Low Stock Items</span>
+                <span class="summary-value warning" id="low-stock-count">0</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Categories</span>
+                <span class="summary-value" id="categories-count">0</span>
+            </div>
+        </div>
+
+        <!-- Internal-Use Stock Table -->
+        <section class="inventory-section">
+            <div class="section-header">
+                <h3>🏢 Internal-Use Stock</h3>
+                <div class="section-stats">
+                    <span class="stat-item">Items: <strong id="internal-count">0</strong></span>
+                    <span class="stat-item">Value: <strong id="internal-value">P 0.00</strong></span>
+                    <span class="stat-item warning">Low: <strong id="internal-low">0</strong></span>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="inventory-table" id="internal-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Unit Cost (P)</th>
+                            <th>Total Value (P)</th>
+                            <th>Supplier</th>
+                            <th>Date Received</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="internal-table-body">
+                        <!-- Will be populated by JavaScript -->
+                        <tr>
+                            <td colspan="9" class="no-data">No internal-use stock items found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- External-Use Stock Table -->
+        <section class="inventory-section">
+            <div class="section-header">
+                <h3>💰 External-Use Stock (Resale)</h3>
+                <div class="section-stats">
+                    <span class="stat-item">Items: <strong id="external-count">0</strong></span>
+                    <span class="stat-item">Value: <strong id="external-value">P 0.00</strong></span>
+                    <span class="stat-item warning">Low: <strong id="external-low">0</strong></span>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="inventory-table" id="external-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Unit Cost (P)</th>
+                            <th>Total Value (P)</th>
+                            <th>Supplier</th>
+                            <th>Date Received</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="external-table-body">
+                        <!-- Will be populated by JavaScript -->
+                        <tr>
+                            <td colspan="9" class="no-data">No external-use stock items found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <div class="inventory-quick-actions">
+            <button class="quick-action-btn" onclick="addSampleData()">
+                ➕ Add Sample Data
+            </button>
+            <button class="quick-action-btn" onclick="clearAllInventory()">
+                🗑️ Clear All Inventory
+            </button>
+            <button class="quick-action-btn" onclick="window.location.href='add - stock.html'">
+                📥 Add New Item
+            </button>
+            <button class="quick-action-btn" onclick="printInventory()">
+                🖨️ Print Report
+            </button>
+        </div>
+    </main>
+
+    <!-- System Footer -->
+    <footer class="system-footer">
+        <div class="footer-content">
+            <p><strong>SCM Stock Control System</strong> | Built on Supply Chain Discipline</p>
+            <p class="footer-principle">
+                Principle: "One system of record eliminates inventory disputes."
+            </p>
+            <p class="footer-version">Inventory Module | Version 1.0</p>
+        </div>
+    </footer>
+
+    <!-- Edit Modal (Hidden by default) -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Stock Item</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="edit-form">
+                    <input type="hidden" id="edit-id">
+                    <input type="hidden" id="edit-type">
+                    
+                    <div class="form-group">
+                        <label for="edit-item-name">Item Name</label>
+                        <input type="text" id="edit-item-name" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-quantity">Quantity</label>
+                            <input type="number" id="edit-quantity" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-unit-cost">Unit Cost (P)</label>
+                            <input type="number" id="edit-unit-cost" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-notes">Notes</label>
+                        <textarea id="edit-notes" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="closeModal()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Inventory Page -->
+    <script>
+        let allInternalStock = [];
+        let allExternalStock = [];
+        let filteredInternal = [];
+        let filteredExternal = [];
+
+        // Load inventory data
+        function loadInventoryData() {
+            allInternalStock = JSON.parse(localStorage.getItem('internalStock')) || [];
+            allExternalStock = JSON.parse(localStorage.getItem('externalStock')) || [];
+            
+            filteredInternal = [...allInternalStock];
+            filteredExternal = [...allExternalStock];
+            
+            renderInventoryTables();
+            updateSummary();
+        }
+
+        // Render tables
+        function renderInventoryTables() {
+            renderInternalTable();
+            renderExternalTable();
+        }
+
+        function renderInternalTable() {
+            const tbody = document.getElementById('internal-table-body');
+            const internalCount = document.getElementById('internal-count');
+            const internalValue = document.getElementById('internal-value');
+            const internalLow = document.getElementById('internal-low');
+            
+            if (filteredInternal.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="no-data">No internal-use stock items found</td>
+                    </tr>
+                `;
+                internalCount.textContent = '0';
+                internalValue.textContent = 'P 0.00';
+                internalLow.textContent = '0';
+                return;
+            }
+            
+            let totalValue = 0;
+            let lowStockCount = 0;
+            
+            tbody.innerHTML = '';
+            filteredInternal.forEach(item => {
+                const totalItemValue = item.quantity * item.unitCost;
+                totalValue += totalItemValue;
+                
+                if (item.quantity < 10) lowStockCount++;
+                
+                const row = document.createElement('tr');
+                row.className = item.quantity < 10 ? 'low-stock-row' : '';
+                row.innerHTML = `
+                    <td>${item.itemName}</td>
+                    <td><span class="category-tag">${item.category}</span></td>
+                    <td><span class="quantity-cell ${item.quantity < 10 ? 'low-quantity' : ''}">${item.quantity}</span></td>
+                    <td>P ${item.unitCost.toFixed(2)}</td>
+                    <td><strong>P ${totalItemValue.toFixed(2)}</strong></td>
+                    <td>${item.supplierName}</td>
+                    <td>${new Date(item.dateReceived).toLocaleDateString()}</td>
+                    <td>${item.notes || '-'}</td>
+                    <td class="action-buttons">
+                        <button class="action-btn edit-btn" onclick="openEditModal('internal', ${item.id})">✏️</button>
+                        <button class="action-btn delete-btn" onclick="deleteItem('internal', ${item.id})">🗑️</button>
+                        <button class="action-btn issue-btn" onclick="issueItem('${item.itemName}', 'internal', ${item.quantity})">📤</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            internalCount.textContent = filteredInternal.length;
+            internalValue.textContent = `P ${totalValue.toFixed(2)}`;
+            internalLow.textContent = lowStockCount;
+        }
+
+        function renderExternalTable() {
+            const tbody = document.getElementById('external-table-body');
+            const externalCount = document.getElementById('external-count');
+            const externalValue = document.getElementById('external-value');
+            const externalLow = document.getElementById('external-low');
+            
+            if (filteredExternal.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="no-data">No external-use stock items found</td>
+                    </tr>
+                `;
+                externalCount.textContent = '0';
+                externalValue.textContent = 'P 0.00';
+                externalLow.textContent = '0';
+                return;
+            }
+            
+            let totalValue = 0;
+            let lowStockCount = 0;
+            
+            tbody.innerHTML = '';
+            filteredExternal.forEach(item => {
+                const totalItemValue = item.quantity * item.unitCost;
+                totalValue += totalItemValue;
+                
+                if (item.quantity < 10) lowStockCount++;
+                
+                const row = document.createElement('tr');
+                row.className = item.quantity < 10 ? 'low-stock-row' : '';
+                row.innerHTML = `
+                    <td>${item.itemName}</td>
+                    <td><span class="category-tag">${item.category}</span></td>
+                    <td><span class="quantity-cell ${item.quantity < 10 ? 'low-quantity' : ''}">${item.quantity}</span></td>
+                    <td>P ${item.unitCost.toFixed(2)}</td>
+                    <td><strong>P ${totalItemValue.toFixed(2)}</strong></td>
+                    <td>${item.supplierName}</td>
+                    <td>${new Date(item.dateReceived).toLocaleDateString()}</td>
+                    <td>${item.notes || '-'}</td>
+                    <td class="action-buttons">
+                        <button class="action-btn edit-btn" onclick="openEditModal('external', ${item.id})">✏️</button>
+                        <button class="action-btn delete-btn" onclick="deleteItem('external', ${item.id})">🗑️</button>
+                        <button class="action-btn issue-btn" onclick="issueItem('${item.itemName}', 'external', ${item.quantity})">📤</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            externalCount.textContent = filteredExternal.length;
+            externalValue.textContent = `P ${totalValue.toFixed(2)}`;
+            externalLow.textContent = lowStockCount;
+        }
+
+        // Update summary
+        function updateSummary() {
+            const allItems = [...allInternalStock, ...allExternalStock];
+            const totalItems = allItems.length;
+            const totalValue = allItems.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0);
+            const lowStockCount = allItems.filter(item => item.quantity < 10).length;
+            const categories = [...new Set(allItems.map(item => item.category))].length;
+            
+            document.getElementById('total-items-count').textContent = totalItems;
+            document.getElementById('total-value').textContent = `P ${totalValue.toFixed(2)}`;
+            document.getElementById('low-stock-count').textContent = lowStockCount;
+            document.getElementById('categories-count').textContent = categories;
+        }
+
+        // Search functionality
+        function searchInventory() {
+            const searchTerm = document.getElementById('global-search').value.toLowerCase();
+            
+            filteredInternal = allInternalStock.filter(item => 
+                item.itemName.toLowerCase().includes(searchTerm) ||
+                item.category.toLowerCase().includes(searchTerm) ||
+                item.supplierName.toLowerCase().includes(searchTerm) ||
+                (item.notes && item.notes.toLowerCase().includes(searchTerm))
+            );
+            
+            filteredExternal = allExternalStock.filter(item => 
+                item.itemName.toLowerCase().includes(searchTerm) ||
+                item.category.toLowerCase().includes(searchTerm) ||
+                item.supplierName.toLowerCase().includes(searchTerm) ||
+                (item.notes && item.notes.toLowerCase().includes(searchTerm))
+            );
+            
+            renderInventoryTables();
+        }
+
+        // Filter functionality
+        function filterInventory() {
+            const category = document.getElementById('category-filter').value;
+            const stockType = document.getElementById('stock-type-filter').value;
+            
+            filteredInternal = allInternalStock.filter(item => 
+                (!category || item.category === category) &&
+                (stockType !== 'external')
+            );
+            
+            filteredExternal = allExternalStock.filter(item => 
+                (!category || item.category === category) &&
+                (stockType !== 'internal')
+            );
+            
+            if (stockType === 'internal') {
+                filteredExternal = [];
+            } else if (stockType === 'external') {
+                filteredInternal = [];
+            }
+            
+            renderInventoryTables();
+        }
+
+        // Sort functionality
+        function sortInventory() {
+            const sortBy = document.getElementById('sort-by').value;
+            
+            const sortFunctions = {
+                'name': (a, b) => a.itemName.localeCompare(b.itemName),
+                'quantity': (a, b) => b.quantity - a.quantity,
+                'value': (a, b) => (b.quantity * b.unitCost) - (a.quantity * a.unitCost),
+                'date': (a, b) => new Date(b.dateReceived) - new Date(a.dateReceived)
+            };
+            
+            filteredInternal.sort(sortFunctions[sortBy]);
+            filteredExternal.sort(sortFunctions[sortBy]);
+            
+            renderInventoryTables();
+        }
+
+        // Edit modal functions
+        function openEditModal(type, id) {
+            const items = type === 'internal' ? allInternalStock : allExternalStock;
+            const item = items.find(i => i.id === id);
+            
+            if (!item) return;
+            
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-type').value = type;
+            document.getElementById('edit-item-name').value = item.itemName;
+            document.getElementById('edit-quantity').value = item.quantity;
+            document.getElementById('edit-unit-cost').value = item.unitCost;
+            document.getElementById('edit-notes').value = item.notes || '';
+            
+            document.getElementById('edit-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        // Edit form submission
+        document.getElementById('edit-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const id = parseInt(document.getElementById('edit-id').value);
+            const type = document.getElementById('edit-type').value;
+            const itemName = document.getElementById('edit-item-name').value;
+            const quantity = parseInt(document.getElementById('edit-quantity').value);
+            const unitCost = parseFloat(document.getElementById('edit-unit-cost').value);
+            const notes = document.getElementById('edit-notes').value;
+            
+            const storageKey = type === 'internal' ? 'internalStock' : 'externalStock';
+            const items = JSON.parse(localStorage.getItem(storageKey)) || [];
+            const index = items.findIndex(item => item.id === id);
+            
+            if (index !== -1) {
+                items[index].itemName = itemName;
+                items[index].quantity = quantity;
+                items[index].unitCost = unitCost;
+                items[index].notes = notes;
+                
+                localStorage.setItem(storageKey, JSON.stringify(items));
+                loadInventoryData();
+                closeModal();
+                alert('Item updated successfully!');
+            }
+        });
+
+        // Delete item
+        function deleteItem(type, id) {
+            if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+                return;
+            }
+            
+            const storageKey = type === 'internal' ? 'internalStock' : 'externalStock';
+            const items = JSON.parse(localStorage.getItem(storageKey)) || [];
+            const filteredItems = items.filter(item => item.id !== id);
+            
+            localStorage.setItem(storageKey, JSON.stringify(filteredItems));
+            loadInventoryData();
+            alert('Item deleted successfully!');
+        }
+
+        // Issue item (redirect to issue page)
+        function issueItem(itemName, type, maxQuantity) {
+            const stockType = type === 'internal' ? 'Internal-Use' : 'External-Use';
+            const encodedName = encodeURIComponent(itemName);
+            const encodedType = encodeURIComponent(stockType);
+            
+            window.location.href = `issue - stock.html?item=${encodedName}&type=${encodedType}&max=${maxQuantity}`;
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const allItems = [...allInternalStock, ...allExternalStock];
+            
+            if (allItems.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+            
+            const headers = ['Item Name', 'Stock Type', 'Category', 'Quantity', 'Unit Cost (P)', 'Total Value (P)', 'Supplier', 'Date Received', 'Notes'];
+            const csvData = [
+                headers.join(','),
+                ...allItems.map(item => [
+                    `"${item.itemName}"`,
+                    item.stockType || (allInternalStock.includes(item) ? 'Internal-Use' : 'External-Use'),
+                    `"${item.category}"`,
+                    item.quantity,
+                    item.unitCost.toFixed(2),
+                    (item.quantity * item.unitCost).toFixed(2),
+                    `"${item.supplierName}"`,
+                    item.dateReceived,
+                    `"${item.notes || ''}"`
+                ].join(','))
+            ];
+            
+            const csvContent = csvData.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scm-inventory-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Utility functions
+        function refreshInventory() {
+            loadInventoryData();
+            alert('Inventory data refreshed!');
+        }
+
+        function toggleLowStockView() {
+            filteredInternal = allInternalStock.filter(item => item.quantity < 10);
+            filteredExternal = allExternalStock.filter(item => item.quantity < 10);
+            renderInventoryTables();
+            alert('Showing only low stock items (quantity < 10)');
+        }
+
+        function addSampleData() {
+            const sampleInternal = [
+                {
+                    id: Date.now() + 1,
+                    itemName: "A4 Printing Paper",
+                    category: "Office Supplies",
+                    quantity: 25,
+                    unitCost: 12.50,
+                    supplierName: "OfficeWorld Ltd",
+                    dateReceived: new Date().toISOString().split('T')[0],
+                    notes: "Standard 80gsm",
+                    stockType: "Internal-Use"
+                },
+                {
+                    id: Date.now() + 2,
+                    itemName: "Network Switch",
+                    category: "IT Equipment",
+                    quantity: 3,
+                    unitCost: 450.00,
+                    supplierName: "Tech Solutions BW",
+                    dateReceived: new Date(Date.now() - 86400000 * 7).toISOString().split('T')[0],
+                    notes: "24-port gigabit",
+                    stockType: "Internal-Use"
+                }
+            ];
+            
+            const sampleExternal = [
+                {
+                    id: Date.now() + 3,
+                    itemName: "Wireless Mouse",
+                    category: "Electronics",
+                    quantity: 50,
+                    unitCost: 15.75,
+                    supplierName: "Global Electronics",
+                    dateReceived: new Date().toISOString().split('T')[0],
+                    notes: "For resale to clients",
+                    stockType: "External-Use"
+                },
+                {
+                    id: Date.now() + 4,
+                    itemName: "Shipping Boxes",
+                    category: "Packaging",
+                    quantity: 200,
+                    unitCost: 2.30,
+                    supplierName: "Packaging Supplies",
+                    dateReceived: new Date(Date.now() - 86400000 * 14).toISOString().split('T')[0],
+                    notes: "Medium size",
+                    stockType: "External-Use"
+                }
+            ];
+            
+            const currentInternal = JSON.parse(localStorage.getItem('internalStock')) || [];
+            const currentExternal = JSON.parse(localStorage.getItem('externalStock')) || [];
+            
+            localStorage.setItem('internalStock', JSON.stringify([...currentInternal, ...sampleInternal]));
+            localStorage.setItem('externalStock', JSON.stringify([...currentExternal, ...sampleExternal]));
+            
+            loadInventoryData();
+            alert('Sample data added! Check both tables.');
+        }
+
+        function clearAllInventory() {
+            if (confirm('WARNING: This will delete ALL inventory data. Are you absolutely sure?')) {
+                localStorage.removeItem('internalStock');
+                localStorage.removeItem('externalStock');
+                loadInventoryData();
+                alert('All inventory data cleared.');
+            }
+        }
+
+        function printInventory() {
+            window.print();
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInventoryData();
+            
+            // Set current date
+            document.getElementById('current-date').textContent = 
+                new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+        });
+    </script>
+</body>
+</html>

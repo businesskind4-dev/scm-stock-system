@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Stock | SCM Stock Control</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+    <!-- System Header (Consistent) -->
+    <header>
+        <div class="system-identity"> 
+            <h1>📦 SCM Stock Control System</h1>
+            <p class="system-tagline">Visibility. Control. Efficiency.</p>
+        </div>
+        <div class="user-info">
+            <span id="current-date"></span>
+            <span id="system-status">🟢 Operational</span>
+        </div>
+    </header>
+
+    <!-- Main Navigation (Consistent) -->
+    <nav class="main-navigation">
+        <ul>
+            <li><a href="index.html" class="nav-link">📊 Dashboard</a></li>
+            <li><a href="add - stock.html" class="nav-link active">📥 Add Stock</a></li>
+            <li><a href="inventory.html" class="nav-link">📋 Inventory Tables</a></li>
+            <li><a href="issue - stock.html" class="nav-link">📤 Issue Stock</a></li>
+            <li><a href="history.html" class="nav-link">📜 Stock History</a></li>
+            <li><a href="reports.html" class="nav-link">📈 Reports</a></li>
+        </ul>
+    </nav>
+
+    <!-- Add Stock Content -->
+    <main class="form-container">
+        <div class="form-header">
+            <h2>📥 Add New Stock Item</h2>
+            <p class="form-subtitle">SCM Principle: Correct classification at entry prevents downstream confusion.</p>
+        </div>
+
+        <!-- Stock Type Selection -->
+        <div class="stock-type-selector">
+            <div class="type-option active" id="type-internal" onclick="selectType('internal')">
+                <div class="type-icon">🏢</div>
+                <h3>Internal-Use Stock</h3>
+                <p>Items for company operations, maintenance, or internal consumption.</p>
+                <div class="type-indicator"></div>
+            </div>
+            <div class="type-option" id="type-external" onclick="selectType('external')">
+                <div class="type-icon">💰</div>
+                <h3>External-Use Stock</h3>
+                <p>Items for resale, client projects, or external distribution.</p>
+                <div class="type-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Add Stock Form -->
+        <form id="add-stock-form" class="stock-form">
+            <input type="hidden" id="stock-type" value="internal">
+
+            <!-- Item Details Section -->
+            <fieldset class="form-section">
+                <legend>Item Details</legend>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-name">Item Name *</label>
+                        <input type="text" id="item-name" required 
+                               placeholder="e.g., A4 Printing Paper, Network Switch">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Office Supplies">Office Supplies</option>
+                            <option value="IT Equipment">IT Equipment</option>
+                            <option value="Maintenance Tools">Maintenance Tools</option>
+                            <option value="Raw Materials">Raw Materials</option>
+                            <option value="Packaging">Packaging</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Consumables">Consumables</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quantity">Quantity *</label>
+                        <input type="number" id="quantity" min="1" required 
+                               placeholder="e.g., 100">
+                        <span class="input-hint">Units/pieces/boxes</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="unit-cost">Unit Cost (P) *</label>
+                        <input type="number" id="unit-cost" min="0" step="0.01" required 
+                               placeholder="e.g., 12.50">
+                        <span class="input-hint">Botswana Pula</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="total-value">Total Value (P)</label>
+                        <input type="text" id="total-value" readonly 
+                               class="calculated-field" value="0.00">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Supplier & Receiving Section -->
+            <fieldset class="form-section">
+                <legend>Supplier & Receiving Information</legend>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="supplier-name">Supplier Name *</label>
+                        <input type="text" id="supplier-name" required 
+                               placeholder="e.g., Office Supplies Ltd, Tech Distributors">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date-received">Date Received *</label>
+                        <input type="date" id="date-received" required 
+                               value="">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="notes">Notes (Optional)</label>
+                    <textarea id="notes" rows="3" 
+                              placeholder="Supplier contact, special handling instructions, quality notes..."></textarea>
+                </div>
+            </fieldset>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="clearForm()">
+                    🗑️ Clear Form
+                </button>
+                <button type="submit" class="btn-primary">
+                    ✅ Save Stock Item
+                </button>
+                <button type="button" class="btn-tertiary" onclick="goToInventory()">
+                    📋 View Inventory
+                </button>
+            </div>
+        </form>
+
+        <!-- Recent Additions Preview -->
+        <div class="recent-additions">
+            <h3>Recently Added Items</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Unit Cost</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-items-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- System Footer (Consistent) -->
+    <footer class="system-footer">
+        <div class="footer-content">
+            <p><strong>SCM Stock Control System</strong> | Built on Supply Chain Discipline</p>
+            <p class="footer-principle">
+                Principle: "Discipline at receiving prevents chaos downstream."
+            </p>
+            <p class="footer-version">Stock Entry Module | Version 1.0</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for This Page -->
+    <script>
+        // Initialize date to today
+        document.getElementById('date-received').valueAsDate = new Date();
+
+        // Select stock type
+        function selectType(type) {
+            document.getElementById('stock-type').value = type;
+            
+            // Update UI
+            document.querySelectorAll('.type-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.getElementById(`type-${type}`).classList.add('active');
+            
+            // Update form context
+            const typeLabel = type === 'internal' ? 'Internal-Use' : 'External-Use (Resale)';
+            document.querySelector('.form-subtitle').textContent = 
+                `SCM Principle: ${typeLabel} stock must be tracked separately for cost control.`;
+        }
+
+        // Calculate total value in real-time
+        document.getElementById('quantity').addEventListener('input', calculateTotal);
+        document.getElementById('unit-cost').addEventListener('input', calculateTotal);
+
+        function calculateTotal() {
+            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+            const unitCost = parseFloat(document.getElementById('unit-cost').value) || 0;
+            const totalValue = quantity * unitCost;
+            
+            document.getElementById('total-value').value = totalValue.toFixed(2);
+        }
+
+        // Form submission
+        document.getElementById('add-stock-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const stockType = document.getElementById('stock-type').value;
+            const itemName = document.getElementById('item-name').value.trim();
+            const category = document.getElementById('category').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const unitCost = parseFloat(document.getElementById('unit-cost').value);
+            const supplierName = document.getElementById('supplier-name').value.trim();
+            const dateReceived = document.getElementById('date-received').value;
+            const notes = document.getElementById('notes').value.trim();
+            
+            // Validate
+            if (!itemName || !category || !supplierName) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Create stock object
+            const stockItem = {
+                id: Date.now(), // Unique ID
+                itemName,
+                category,
+                quantity,
+                unitCost,
+                totalValue: quantity * unitCost,
+                supplierName,
+                dateReceived,
+                notes,
+                stockType: stockType === 'internal' ? 'Internal-Use' : 'External-Use',
+                dateAdded: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            const storageKey = stockType === 'internal' ? 'internalStock' : 'externalStock';
+            const existingStock = JSON.parse(localStorage.getItem(storageKey)) || [];
+            existingStock.push(stockItem);
+            localStorage.setItem(storageKey, JSON.stringify(existingStock));
+            
+            // Show success
+            showSuccessMessage(stockItem);
+            
+            // Update recent items
+            updateRecentItems();
+            
+            // Clear form (optional)
+            // clearForm();
+        });
+
+        function showSuccessMessage(item) {
+            const message = `
+                ✅ Stock Added Successfully!
+                
+                Item: ${item.itemName}
+                Type: ${item.stockType}
+                Quantity: ${item.quantity}
+                Value: P ${item.totalValue.toFixed(2)}
+                
+                Stock is now available in inventory.
+            `;
+            
+            alert(message);
+        }
+
+        function updateRecentItems() {
+            // Get recent from both internal and external
+            const internal = JSON.parse(localStorage.getItem('internalStock')) || [];
+            const external = JSON.parse(localStorage.getItem('externalStock')) || [];
+            
+            const allItems = [...internal, ...external]
+                .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+                .slice(0, 5);
+            
+            const tbody = document.getElementById('recent-items-body');
+            tbody.innerHTML = '';
+            
+            if (allItems.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="no-data">No items added yet</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            allItems.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.itemName}</td>
+                    <td><span class="type-tag ${item.stockType === 'Internal-Use' ? 'internal-tag' : 'external-tag'}">${item.stockType}</span></td>
+                    <td>${item.quantity}</td>
+                    <td>P ${item.unitCost.toFixed(2)}</td>
+                    <td>${new Date(item.dateReceived).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function clearForm() {
+            if (confirm('Clear all form fields?')) {
+                document.getElementById('add-stock-form').reset();
+                document.getElementById('date-received').valueAsDate = new Date();
+                document.getElementById('total-value').value = '0.00';
+                document.getElementById('stock-type').value = 'internal';
+                selectType('internal');
+            }
+        }
+
+        function goToInventory() {
+            window.location.href = 'inventory.html';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            selectType('internal');
+            updateRecentItems();
+            
+            // Set navigation active state
+            const currentPage = window.location.pathname.split('/').pop();
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
